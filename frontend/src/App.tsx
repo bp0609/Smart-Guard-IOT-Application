@@ -5,7 +5,7 @@ const App: React.FC = () => {
   const [message, setMessage] = useState<string>('');
 
   useEffect(() => {
-    axios.get<string>('http://localhost:5000/api')
+    axios.get<string>('http://localhost:5000')
       .then(response => setMessage(response.data))
       .catch(error => console.error('Error fetching data:', error));
   }, []);
