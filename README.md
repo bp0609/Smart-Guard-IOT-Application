@@ -1,6 +1,4 @@
-Below is a step-by-step guide to setting up your full-stack project using React for the frontend, Node.js with Express for the backend, and PostgreSQL for your database. This guide includes installation commands, the initial file structure, and instructions on running the project.
-
----
+# Project Setup
 
 ## Prerequisites
 
@@ -13,14 +11,7 @@ Before starting, ensure you have the following installed on your machine:
 
 ## Step 1: Project Setup and File Structure
 
-1. **Create the Main Project Folder:**
-
-   Open your terminal and create a folder for your project:
-
-   ```bash
-   mkdir iot-project
-   cd iot-project
-   ```
+1. **Clone the main project:**
 
 2. **Create Separate Folders for Frontend and Backend:**
 
@@ -33,7 +24,7 @@ Before starting, ensure you have the following installed on your machine:
    Here’s a basic overview of the project structure:
 
    ```
-   iot-project/
+   IoT-project/
    ├── backend/
    │   ├── controllers/
    │   │   └── sensorController.js   # (Handles sensor data logic)
@@ -72,7 +63,7 @@ Before starting, ensure you have the following installed on your machine:
    Install Express, PostgreSQL client (`pg`), CORS, and dotenv for environment variables:
 
    ```bash
-   npm install express pg cors dotenv
+   npm install express pg cors dotenv axios
    ```
 
 3. **Create the Server File (`index.js`):**
@@ -111,9 +102,9 @@ Before starting, ensure you have the following installed on your machine:
 
    ```env
    PORT=5000
-   DB_USER=your_db_username
+   DB_USER=postgres
    DB_HOST=localhost
-   DB_DATABASE=your_db_name
+   DB_DATABASE=smart_guard
    DB_PASSWORD=your_db_password
    DB_PORT=5432
    ```
@@ -124,19 +115,20 @@ Before starting, ensure you have the following installed on your machine:
 
 1. **Initialize the React App:**
 
-   Navigate to the `frontend` folder and create a new React app using Create React App:
+   Navigate to the `frontend` folder and create a new React + Typescript app using vite:
 
    ```bash
    cd ../frontend
-   npx create-react-app .
+   npm create vite@latest . --template react
+   npm install
    ```
 
 2. **Run the React App:**
 
-   Once installation is complete, start the development server:
+   Once installation is complete, Start the Vite dev server with::
 
    ```bash
-   npm start
+   npm run dev
    ```
 
    Your browser should open [http://localhost:3000](http://localhost:3000) with the default React page.
@@ -154,13 +146,13 @@ Before starting, ensure you have the following installed on your machine:
    Open your terminal or PostgreSQL client (like pgAdmin) and create a new database. For example, using the command line:
 
    ```bash
-   psql -U your_db_username
+   psql -U postgres
    ```
 
    Then in the psql shell:
 
    ```sql
-   CREATE DATABASE your_db_name;
+   CREATE DATABASE smart_guard;
    \q
    ```
 
