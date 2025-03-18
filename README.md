@@ -66,37 +66,61 @@ Before starting, ensure you have the following installed on your machine:
    npm install express pg cors dotenv axios
    ```
 
-3. **Create the Server File (`index.js`):**
+   Install development dependencies for TypeScript:
 
-   In `backend/index.js`, add the following starter code:
+   ```bash
+   npm install -D typescript ts-node-dev @types/node @types/express
+   npm install --save-dev @types/pg @types/cors @types/dotenv @types/axios
+   ```
 
-   ```javascript
-   // backend/index.js
-   require("dotenv").config();
-   const express = require("express");
-   const cors = require("cors");
+3. **Initialize TypeScript Configuration:**
+
+   Generate a tsconfig.json file:
+
+   ```bash
+   npx tsc --init
+   ```
+
+   Ensure the following settings are present in `tsconfig.json`:
+
+   ```json
+   {
+     "compilerOptions": {
+       "target": "ES2020",
+       "module": "commonjs",
+       "rootDir": "./src",
+       "outDir": "./dist",
+       "strict": true,
+       "esModuleInterop": true
+     }
+   }
+   ```
+
+4. **Create the Server File (`src/index.js`):**
+
+   In `backend/src/index.js`, add the following starter code:
+
+   ```typescript
+   import express from "express";
+   import dotenv from "dotenv";
+
+   dotenv.config();
+
    const app = express();
    const port = process.env.PORT || 5000;
 
-   // Middleware
-   app.use(cors());
    app.use(express.json());
 
-   // Simple route
    app.get("/", (req, res) => {
      res.send("Backend is running!");
    });
-
-   // Import routes (example: sensors)
-   // const sensorRoutes = require('./routes/sensors');
-   // app.use('/api/sensors', sensorRoutes);
 
    app.listen(port, () => {
      console.log(`Server is running on port ${port}`);
    });
    ```
 
-4. **Setup Environment Variables:**
+5. **Setup Environment Variables:**
 
    Create a file named `.env` in the backend folder. Example contents:
 
@@ -161,7 +185,6 @@ Before starting, ensure you have the following installed on your machine:
    In your backend, you can create a database connection using the `pg` package. For example, in a file like `db.js`:
 
    ```javascript
-   // backend/db.js
    const { Pool } = require("pg");
    const pool = new Pool({
      user: process.env.DB_USER,
@@ -183,14 +206,20 @@ Before starting, ensure you have the following installed on your machine:
    In the `backend` folder, run:
 
    ```bash
-   node index.js
+   node src/index.js
+   ```
+
+   Or
+
+   ```bash
+   npm run dev
    ```
 
    (Optionally, install and use `nodemon` for automatic server reloads during development:
 
    ````bash
    npm install -g nodemon
-   nodemon index.js
+   nodemon src/index.js
    ```)
 
    ````
