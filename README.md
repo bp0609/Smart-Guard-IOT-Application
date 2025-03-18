@@ -98,27 +98,7 @@ Before starting, ensure you have the following installed on your machine:
 
 4. **Create the Server File (`src/index.js`):**
 
-   In `backend/src/index.js`, add the following starter code:
-
-   ```typescript
-   import express from "express";
-   import dotenv from "dotenv";
-
-   dotenv.config();
-
-   const app = express();
-   const port = process.env.PORT || 5000;
-
-   app.use(express.json());
-
-   app.get("/", (req, res) => {
-     res.send("Backend is running!");
-   });
-
-   app.listen(port, () => {
-     console.log(`Server is running on port ${port}`);
-   });
-   ```
+   `backend/src/index.js`
 
 5. **Setup Environment Variables:**
 
