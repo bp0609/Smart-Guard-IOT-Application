@@ -209,7 +209,7 @@ Before starting, ensure you have the following installed on your machine:
    In the `frontend` folder, run:
 
    ```bash
-   npm start
+   npm run dev
    ```
 
 3. **Verify:**
