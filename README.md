@@ -9,21 +9,11 @@ Before starting, ensure you have the following installed on your machine:
 
 ---
 
-## Step 1: Project Setup and File Structure
-
-1. **Clone the main project:**
-
-2. **Create Separate Folders for Frontend and Backend:**
-
-   ```bash
-   mkdir backend frontend
-   ```
-
-3. **Suggested File Structure:**
+1. **File Structure:**
 
    Here’s a basic overview of the project structure:
 
-   ```
+   ```bash
    IoT-project/
    ├── backend/
    │   ├── controllers/
@@ -47,99 +37,25 @@ Before starting, ensure you have the following installed on your machine:
 
 ---
 
-## Step 2: Setting Up the Backend (Node.js with Express)
+## Step 2: Setting Up
 
-1. **Initialize a Node.js Project:**
+- Go to `frontend` folder and run `npm i`:
+  
+   ```bash
+   cd frontend
+   npm i
+   ```
 
-   Navigate into the backend folder and initialize your project:
+- Similarly for `backend`:
 
    ```bash
    cd backend
-   npm init -y
-   ```
-
-2. **Install Dependencies:**
-
-   Install Express, PostgreSQL client (`pg`), CORS, and dotenv for environment variables:
-
-   ```bash
-   npm install express pg cors dotenv axios
-   ```
-
-   Install development dependencies for TypeScript:
-
-   ```bash
-   npm install -D typescript ts-node-dev @types/node @types/express
-   npm install --save-dev @types/pg @types/cors @types/dotenv @types/axios
-   ```
-
-3. **Initialize TypeScript Configuration:**
-
-   Generate a tsconfig.json file:
-
-   ```bash
-   npx tsc --init
-   ```
-
-   Ensure the following settings are present in `tsconfig.json`:
-
-   ```json
-   {
-     "compilerOptions": {
-       "target": "ES2020",
-       "module": "commonjs",
-       "rootDir": "./src",
-       "outDir": "./dist",
-       "strict": true,
-       "esModuleInterop": true
-     }
-   }
-   ```
-
-4. **Create the Server File (`src/index.js`):**
-
-   `backend/src/index.js`
-
-5. **Setup Environment Variables:**
-
-   Create a file named `.env` in the backend folder. Example contents:
-
-   ```env
-   PORT=5000
-   DB_USER=postgres
-   DB_HOST=localhost
-   DB_DATABASE=smart_guard
-   DB_PASSWORD=your_db_password
-   DB_PORT=5432
+   npm i
    ```
 
 ---
 
-## Step 3: Setting Up the Frontend (React)
-
-1. **Initialize the React App:**
-
-   Navigate to the `frontend` folder and create a new React + Typescript app using vite:
-
-   ```bash
-   cd ../frontend
-   npm create vite@latest . --template react
-   npm install
-   ```
-
-2. **Run the React App:**
-
-   Once installation is complete, Start the Vite dev server with::
-
-   ```bash
-   npm run dev
-   ```
-
-   Your browser should open [http://localhost:3000](http://localhost:3000) with the default React page.
-
----
-
-## Step 4: Setting Up PostgreSQL
+## Step 3: Setting Up PostgreSQL
 
 1. **Install PostgreSQL:**
 
@@ -150,7 +66,8 @@ Before starting, ensure you have the following installed on your machine:
    Open your terminal or PostgreSQL client (like pgAdmin) and create a new database. For example, using the command line:
 
    ```bash
-   psql -U postgres
+   psql -U postgres (for windows)
+   sudo -u postgres psql (for linux)
    ```
 
    Then in the psql shell:
@@ -179,42 +96,30 @@ Before starting, ensure you have the following installed on your machine:
 
 ---
 
-## Step 5: Running the Initial Project
+## Step 4: Run the React App
 
-1. **Start the Backend Server:**
-
-   In the `backend` folder, run:
+1. Once installation is complete, Start the Vite dev server with::
 
    ```bash
-   node src/index.js
+   make start-frontend
    ```
 
-   Or
+2. In another terminal run
 
    ```bash
-   npm run dev
+   make start-backend
    ```
 
-   (Optionally, install and use `nodemon` for automatic server reloads during development:
-
-   ````bash
-   npm install -g nodemon
-   nodemon src/index.js
-   ```)
-
-   ````
-
-2. **Start the Frontend Development Server:**
-
-   In the `frontend` folder, run:
+3. Or alternatively you can run both using 
 
    ```bash
-   npm run dev
+   make dev
    ```
 
-3. **Verify:**
+4. For other `make` help run
 
-   - Visit [http://localhost:5000](http://localhost:5000) in your browser to see your backend welcome message.
-   - Visit [http://localhost:3000](http://localhost:3000) to see your React application.
+   ```bash
+   make help
+   ```
 
 ---
