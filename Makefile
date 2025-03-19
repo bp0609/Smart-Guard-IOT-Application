@@ -10,6 +10,20 @@ DB_PORT=5432
 # .PHONY specifies targets that aren't actual files
 .PHONY: start-backend start-frontend create-db drop-db migrate rollback build-backend build-frontend dev start seed
 
+help:
+	@echo "Available commands:"
+	@echo "  make start-backend   - Start the backend server in development mode"
+	@echo "  make start-frontend  - Start the frontend client (Vite dev server)"
+	@echo "  make create-db       - Create the PostgreSQL database"
+	@echo "  make drop-db         - Drop the PostgreSQL database if it exists"
+	@echo "  make migrate-up      - Apply database schema migrations (up.sql)"
+	@echo "  make migrate-down    - Rollback database schema migrations (down.sql)"
+	@echo "  make seed_db            - Seed the database with initial data"
+	@echo "  make dev             - Run both backend and frontend in development mode"
+	@echo "  make build-backend   - Build the backend (TypeScript to JavaScript)"
+	@echo "  make build-frontend  - Build the frontend (Vite build)"
+	@echo "  make start           - Start both backend and frontend concurrently"
+
 # Start the backend in development mode
 start-backend:
 	@echo "Starting backend server..."
@@ -23,26 +37,29 @@ start-frontend:
 # Create the PostgreSQL database
 create-db:
 	@echo "Creating database $(DB_NAME)..."
-	PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -c "CREATE DATABASE $(DB_NAME);" || true
+	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -c "CREATE DATABASE $(DB_NAME);" || true
 # Drop the PostgreSQL database
 drop-db:
 	@echo "Dropping database $(DB_NAME)..."
-	PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -c "DROP DATABASE IF EXISTS $(DB_NAME);" || true
+	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -c "DROP DATABASE IF EXISTS $(DB_NAME);" || true
 
 # Run database schema up migrations
 migrate-up:
 	@echo "Running database up migrations..."
-	@psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/migration/up.sql
+	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/migration/up.sql
 
 # Run database schema down migrations
 migrate-down:
 	@echo "Running database down migrations..."
-	@psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/migration/down.sql
+	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/migration/down.sql
 
 # Seed the database with initial data
-seed:
+seed-db:
 	@echo "Seeding database..."
-	@psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f database/seed.sql
+	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/seed.sql
+
+# Clean the database (drop, create, migrate, seed)
+reset-db: drop-db create-db migrate-up seed_db
 
 # Run both backend and frontend in development mode
 dev:
