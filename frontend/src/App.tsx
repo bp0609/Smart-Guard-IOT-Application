@@ -41,15 +41,17 @@ function App() {
   return (
     <>
       <Router>
-        <Navbar title="Navbar" mode={mode} toggleMode={toggleMode} />
+        <Navbar title="SG-IOT" mode={mode} toggleMode={toggleMode} />
+        <div className="container my-3 text-center">
+          <h1>Smart Guard IOT Application</h1>
+        </div>
         <Routes>
           <Route path="/" element={<Home />} />
         </Routes>
+        <div>
+          <p>{message}</p>
+        </div>
       </Router>
-      <div>
-        <h1>IoT Monitoring System</h1>
-        <p>{message}</p>
-      </div>
     </>
   );
 }
