@@ -1,39 +1,41 @@
 -- 1. Rooms Table: Represents classrooms or other monitored spaces.
-CREATE TABLE Rooms (
-    room_id SERIAL PRIMARY KEY,
-    room_name VARCHAR(100) NOT NULL,
-    location VARCHAR(255),        -- Optional: additional location info
+CREATE TABLE locations (
+    location_id SERIAL PRIMARY KEY,
+    building VARCHAR(50) NOT NULL,
+    room_number INTEGER NOT NULL,
     description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (building, room_number)
 );
 
 -- 2. SensorTypes Table: Defines different sensor categories.
 CREATE TABLE SensorTypes (
     sensor_type_id SERIAL PRIMARY KEY,
-    sensor_type_name VARCHAR(50) NOT NULL,  -- e.g., Temperature, Humidity, Light, AirQuality
+    sensor_type_name VARCHAR(50) NOT NULL UNIQUE,  -- e.g., Temperature, Humidity, Light, AirQuality
     unit VARCHAR(20),                       -- e.g., °C, %, lux, ppm
-    description TEXT
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 );
 
--- 3. Sensors Table: Each sensor instance in a room.
+-- 3. Sensors Table: store individual sensor information, like its location, status, and installation date.
 CREATE TABLE Sensors (
     sensor_id SERIAL PRIMARY KEY,
-    sensor_name VARCHAR(100),               -- Identifier or friendly name for the sensor
-    sensor_type_id INT NOT NULL,
-    room_id INT NOT NULL,
+    sensor_type_id INTEGER NOT NULL,
+    location_id INTEGER NOT NULL,
     installation_date DATE,
-    last_calibration DATE,
     status VARCHAR(20) DEFAULT 'active',    -- e.g., active, inactive, maintenance
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sensor_type_id) REFERENCES SensorTypes(sensor_type_id),
-    FOREIGN KEY (room_id) REFERENCES Rooms(room_id)
+    FOREIGN KEY (location_id) REFERENCES locations(location_id)
 );
 
 -- 4. SensorReadings Table: Records sensor data over time.
 CREATE TABLE SensorReadings (
-    reading_id SERIAL PRIMARY KEY,
+    reading_id BIGSERIAL PRIMARY KEY,
     sensor_id INT NOT NULL,
     reading_value DECIMAL(10, 2) NOT NULL,    -- Measurement value; adjust precision as needed
-    reading_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    reading_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id)
 );
 
