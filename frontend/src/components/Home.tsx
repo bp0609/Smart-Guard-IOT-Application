@@ -1,39 +1,68 @@
-// import { ImgCont, ScrollCont, } from "./Conts"
 import Dropdown from "./Dropdown";
 import { useEffect, useState } from "react";
-
-// const acad_blocks = ["AB 1", "AB 2", "AB 3"];
-// const room_nos = ["101", "102", "103"];
-
-// getting acad_blocks and room_nos from backend
 import axios from "axios";
 
-const [acad_blocks, setAcadBlocks] = useState<string[]>([]);
-const [room_nos, setRoomNos] = useState<string[]>([]);
-
-useEffect(() => {
-    axios.get<string[]>('http://localhost:5000/acad_blocks')
-        .then((response) => {
-            setAcadBlocks(response.data);
-        })
-        .catch((error) => {
-            console.error('Error fetching data:', error);
-        });
-
-    axios.get<string[]>('http://localhost:5000/room_nos')
-        .then((response) => {
-            setRoomNos(response.data);
-        })
-        .catch((error) => {
-            console.error('Error fetching data:', error);
-        });
-}, []);
-
 export default function Home() {
+    // State to store grouped locations, e.g., { "AB1": [101, 102], "AB2": [201, 202] }
+    const [locations, setLocations] = useState<{ [key: string]: number[] }>({});
+    // State to store the currently selected academic block
+    const [selectedAcadBlock, setSelectedAcadBlock] = useState("");
+    // State to store the title of the selected academic block
+    const [acadBlockTitle, setAcadBlockTitle] = useState("Academic Block");
+    // State to store the currently selected room number
+    const [selectedRoom, setSelectedRoom] = useState("");
+
+    // Fetch and group locations
+    const fetchLocations = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/locations');
+            const data = response.data; // data is an array of location objects
+            const grouped = data.reduce((acc: { [key: string]: number[] }, item: { building: string; room_number: number }) => {
+                const building = item.building;
+                // Initialize array if not already created
+                if (!acc[building]) {
+                    acc[building] = [];
+                }
+                // Add the room number to the building key array
+                acc[building].push(item.room_number);
+                return acc;
+            }, {});
+            setLocations(grouped);
+        } catch (error) {
+            console.error('Error fetching locations:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchLocations();
+    }, []);
+
+    // Handle academic block selection
+    const handleAcadBlockSelect = (item: string) => {
+        setSelectedAcadBlock(item);
+        setAcadBlockTitle(item);
+        setSelectedRoom(""); // Reset selected room when academic block changes
+    };
+
+    // Handle room number selection
+    const handleRoomSelect = (item: string) => {
+        setSelectedRoom(item);
+        console.log("Selected room:", item);
+    };
+
     return (
         <div className="container my-3 text-center d-flex justify-content-around">
-            <Dropdown title="Academic Block" items={acad_blocks} onSelect={(item) => console.log(item)} />
-            <Dropdown title="Room No." items={room_nos} onSelect={(item) => console.log(item)} />
+            <Dropdown
+                title={acadBlockTitle}
+                items={Object.keys(locations)}
+                onSelect={handleAcadBlockSelect}
+            />
+            <Dropdown
+                title={selectedRoom || "Room Number"}
+                items={selectedAcadBlock ? locations[selectedAcadBlock].map(String) : []}
+                onSelect={handleRoomSelect}
+                disabled={!selectedAcadBlock}
+            />
         </div>
     );
 }
