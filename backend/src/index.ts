@@ -25,6 +25,10 @@ app.use('/sensors', sensorsRoute);
 app.use('/sensors', sensorReadingsRoute);
 app.use('/alerts', alertsRoute);
 
+app.get('/api/acad_blocks', (req, res) => {
+  res.json(['AB 1', 'AB 2', 'AB 3']);
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

@@ -15,3 +15,7 @@ ORDER BY reading_time DESC;
 -- name: DeleteSensorReading :exec
 DELETE FROM SensorReadings
 WHERE reading_id = $1;
+
+-- name: DeleteSensorReadingsTill :exec
+DELETE FROM SensorReadings
+WHERE sensor_id = $1 AND reading_time <= CAST($2 AS timestamp);
