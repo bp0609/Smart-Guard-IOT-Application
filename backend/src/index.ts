@@ -13,6 +13,10 @@ app.get('/', (req, res) => {
   res.send('Backend is running!');
 });
 
+app.get('/api/acad_blocks', (req, res) => {
+  res.json(['AB 1', 'AB 2', 'AB 3']);
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
