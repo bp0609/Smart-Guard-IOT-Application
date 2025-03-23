@@ -1,4 +1,4 @@
-export default function Dropdown({ title, items, onSelect, disabled }: { title: string; items: string[]; onSelect: (item: string) => void; disabled?: boolean }) {
+export default function Dropdown({ title, items, onSelect, disabled, disable_msg = "Disabled" }: { title: string; items: string[]; onSelect: (item: string) => void; disabled?: boolean, disable_msg?: string }) {
     if (disabled) {
         return (
             <div className="btn-group">
@@ -8,7 +8,7 @@ export default function Dropdown({ title, items, onSelect, disabled }: { title: 
                 </button>
                 <ul className="dropdown-menu">
                     <li>
-                        <button className="dropdown-item" disabled>Select an academic block first</button>
+                        <button className="dropdown-item" disabled>{disable_msg}</button>
                     </li>
                 </ul>
             </div>
