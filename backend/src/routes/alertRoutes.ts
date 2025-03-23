@@ -6,7 +6,7 @@ const router = Router();
 
 router.get('/', getAlerts);                       // GET /alerts
 router.post('/', createAlert);                    // POST /alerts
-// router.put('/:id', updateAlert);                  // PUT /alerts/:id
-// router.delete('/:id', deleteAlert);               // DELETE /alerts/:id
+router.put('/:id', updateAlert);                  // PUT /alerts/:id
+router.delete('/:id', deleteAlert);               // DELETE /alerts/:id
 
 export default router;

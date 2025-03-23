@@ -7,7 +7,7 @@ const router = Router();
 router.get('/', getSensors);                        // GET /sensors
 // router.get('/:id', getSensorById);                    // GET /sensors/:id
 router.post('/', createSensor);                       // POST /sensors
-// router.put('/:id', updateSensor);                     // PUT /sensors/:id
-// router.delete('/:id', deleteSensor);                  // DELETE /sensors/:id
+router.put('/:id', updateSensor);                     // PUT /sensors/:id
+router.delete('/:id', deleteSensor);                  // DELETE /sensors/:id
 
 export default router;
