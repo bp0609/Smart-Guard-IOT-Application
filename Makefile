@@ -18,11 +18,12 @@ help:
 	@echo "  make drop-db         - Drop the PostgreSQL database if it exists"
 	@echo "  make migrate-up      - Apply database schema migrations (up.sql)"
 	@echo "  make migrate-down    - Rollback database schema migrations (down.sql)"
-	@echo "  make seed_db            - Seed the database with initial data"
+	@echo "  make seed-db            - Seed the database with initial data"
 	@echo "  make dev             - Run both backend and frontend in development mode"
 	@echo "  make build-backend   - Build the backend (TypeScript to JavaScript)"
 	@echo "  make build-frontend  - Build the frontend (Vite build)"
 	@echo "  make start           - Start both backend and frontend concurrently"
+	@echo "  make reset-db        - Reset the database (migrate-down --> migrate-up --> seed-db)"
 
 # Start the backend in development mode
 start-backend:
@@ -59,7 +60,7 @@ seed-db:
 	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/seed.sql
 
 # Clean the database (drop, create, migrate, seed)
-reset-db: drop-db create-db migrate-up seed_db
+reset-db: migrate-down migrate-up seed-db
 
 # Run both backend and frontend in development mode
 dev:
