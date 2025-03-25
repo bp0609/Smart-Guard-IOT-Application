@@ -66,3 +66,13 @@ export const deleteLocation = async (req: Request, res: Response):Promise<any> =
     res.status(500).json({ error: 'Failed to delete location', message: error.message });
   }
 };
+
+export const getLocationsByBuilding = async (req: Request, res: Response):Promise<any> => {
+  const { building } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM locations WHERE building = $1', [building]);
+    res.status(200).json(result.rows);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to fetch locations', message: error.message });
+  }
+};
