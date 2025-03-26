@@ -25,8 +25,13 @@ export const getSensorById = async (req: Request, res: Response):Promise<any> =>
 };
 
 export const createSensor = async (req: Request, res: Response):Promise<any> => {
-  const { sensor_type, location_id, installation_date, status } = req.body;
+  const { sensor_type, building, room_number, installation_date, status } = req.body;
   try {
+    const location_id_result = await pool.query('SELECT location_id FROM Locations WHERE building = $1 AND room_number = $2', [building, room_number]);
+    if (location_id_result.rowCount === 0) {
+      return res.status(400).json({ message: 'Invalid location' });
+    }
+    const location_id = location_id_result.rows[0].location_id;
     const sensorTypeResult = await pool.query('SELECT * FROM sensortypes WHERE sensor_type_name = $1', [sensor_type]);
     if (sensorTypeResult.rowCount === 0) {
       return res.status(400).json({ message: 'Invalid sensor_type_id' });
