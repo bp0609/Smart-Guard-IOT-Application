@@ -21,14 +21,11 @@ def send_readings(sensor_id, duration, server_url):
         except Exception as e:
             print(f"Sensor {sensor_id}: Error sending reading: {e}")
         
-        time.sleep(10)
+        time.sleep(3)
 
-def create_sensor(server_url):
-    # Generate random data
-    sensor_type_id = random.randint(1, 4)  # Random sensor_type_id from 1 to 4
-    location_id = random.randint(1, 10)    # Random location_id from 1 to 10
+def create_sensor(server_url,location_id, sensor_type_id):
     installation_date = datetime.now().strftime('%Y-%m-%d')  # Current date in YYYY-MM-DD
-    status = 'active'                      # Default status
+    status = 'active'                   
 
     # Construct the payload for the POST request
     payload = {
@@ -41,6 +38,7 @@ def create_sensor(server_url):
     try:
         # Send POST request to create the sensor
         response = requests.post(f"{server_url}/sensors", json=payload)
+        print(response.json())
         if response.status_code == 201:
             # Extract sensor ID from the response
             sensor_id = response.json().get('sensor_id')  # Adjust key if necessary
@@ -53,18 +51,42 @@ def create_sensor(server_url):
         print(f"Error creating sensor: {e}")
         return None
 
+def create_location(server_url,num_location,num_rooms):
+    # Generate random data
+    locations = []
+    for i in range(1, num_location + 1):
+        building_name = f"AB{i}"
+        for room in range(101, 101 + num_rooms):
+            location_name = f"{building_name}-{room}"
+            payload = {
+                "building": building_name,
+                "room_number": room,
+                "description": f"Room {room} in Building {building_name}"
+            }
+            try:
+                response = requests.post(f"{server_url}/locations", json=payload)
+                if response.status_code == 201:
+                    location_id = response.json().get('location_id')  # Adjust key if necessary
+                    print(f"Created location with ID {location_id}: {location_name}")
+                    locations.append(location_id)
+                else:
+                    print(f"Failed to create location {location_name}, status {response.status_code}")
+            except Exception as e:
+                print(f"Error creating location {location_name}: {e}")
+    return locations
+
 def main():
     # Configuration
-    num_sensors = 5                # Number of sensors to create
-    duration = 60                  # Duration in seconds to send readings
-    server_url = "http://localhost:5000"  # Server API base URL
-
-    # Step 1: Create sensors and collect their IDs
+    sensor_types = 4
+    duration = 90
+    server_url = "http://localhost:5000"
+    location_ids=create_location(server_url,10,10)
     sensor_ids = []
-    for _ in range(num_sensors):
-        sensor_id = create_sensor(server_url)
-        if sensor_id is not None:
-            sensor_ids.append(sensor_id)
+    for location_id in location_ids:
+        for sensor_type_id in range(sensor_types):
+            sensor_id = create_sensor(server_url,location_id,sensor_type_id+1)
+            if sensor_id is not None:
+                sensor_ids.append(sensor_id)
 
     if not sensor_ids:
         print("No sensors were created successfully. Exiting.")
