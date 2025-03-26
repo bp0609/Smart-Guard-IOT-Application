@@ -3,7 +3,7 @@ BACKEND_DIR=backend
 FRONTEND_DIR=frontend
 DB_USER=postgres
 DB_NAME=smart_guard
-DB_PASSWORD=bp0609
+DB_PASSWORD=postgres
 DB_HOST=localhost
 DB_PORT=5432
 
@@ -18,7 +18,7 @@ help:
 	@echo "  make drop-db         - Drop the PostgreSQL database if it exists"
 	@echo "  make migrate-up      - Apply database schema migrations (up.sql)"
 	@echo "  make migrate-down    - Rollback database schema migrations (down.sql)"
-	@echo "  make seed_db            - Seed the database with initial data"
+	@echo "  make seed-db         - Seed the database with initial data"
 	@echo "  make dev             - Run both backend and frontend in development mode"
 	@echo "  make build-backend   - Build the backend (TypeScript to JavaScript)"
 	@echo "  make build-frontend  - Build the frontend (Vite build)"
@@ -37,29 +37,30 @@ start-frontend:
 # Create the PostgreSQL database
 create-db:
 	@echo "Creating database $(DB_NAME)..."
-	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -c "CREATE DATABASE $(DB_NAME);" || true
+	sudo -u $(DB_USER) psql -c "CREATE DATABASE $(DB_NAME);" || true
+
 # Drop the PostgreSQL database
 drop-db:
 	@echo "Dropping database $(DB_NAME)..."
-	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -c "DROP DATABASE IF EXISTS $(DB_NAME);" || true
+	sudo -u $(DB_USER) psql -c "DROP DATABASE IF EXISTS $(DB_NAME);" || true
 
 # Run database schema up migrations
 migrate-up:
 	@echo "Running database up migrations..."
-	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/migration/up.sql
+	sudo -u $(DB_USER) psql -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/migration/up.sql
 
 # Run database schema down migrations
 migrate-down:
 	@echo "Running database down migrations..."
-	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/migration/down.sql
+	sudo -u $(DB_USER) psql -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/migration/down.sql
 
 # Seed the database with initial data
 seed-db:
 	@echo "Seeding database..."
-	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/seed.sql
+	sudo -u $(DB_USER) psql -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/seed.sql
 
 # Clean the database (drop, create, migrate, seed)
-reset-db: drop-db create-db migrate-up seed_db
+reset-db: drop-db create-db migrate-up seed-db
 
 # Run both backend and frontend in development mode
 dev:
