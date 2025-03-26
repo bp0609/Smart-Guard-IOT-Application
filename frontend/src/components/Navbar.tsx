@@ -28,7 +28,9 @@ export default function Navbar({ title = 'NavBar', mode = 'light', toggleMode }:
                             <Link className="nav-link" to="/">Home</Link>
                         </li> */}
                     </ul>
-                    <button type="button" className="btn btn-secondary mx-3" data-bs-toggle="modal" data-bs-target="#exampleModal">Add Sensors</button>
+                    {window.location.pathname === '/' && (
+                        <button type="button" className="btn btn-secondary mx-3" data-bs-toggle="modal" data-bs-target="#exampleModal">Add Sensors</button>
+                    )}
 
                     <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
                         {(mode === 'light') ? 'Light' : 'Dark'} mode
