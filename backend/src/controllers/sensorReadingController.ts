@@ -32,7 +32,7 @@ export const createSensorReading = async (req: Request, res: Response):Promise<a
 };
 
 export const getSensorReadingsByLocation = async (req: Request, res: Response):Promise<any> => {
-  const { building, room_number} = req.params;
+  const { building, room_number } = req.params;
   try {
     const locationResult = await pool.query(
       `SELECT location_id
@@ -57,25 +57,33 @@ export const getSensorReadingsByLocation = async (req: Request, res: Response):P
       [locationId]
     );
 
-    const formattedResult: Record<string, any> = {};
+    const formattedResult: any[] = [];
 
     result.rows.forEach(row => {
       const formattedTime = new Date(row.reading_time).toLocaleString('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: 'numeric',
+      hour12: false
       }).replace(',', '').replace(' ', '-');
 
-      if (!formattedResult[row.sensor_id]) {
-        formattedResult[row.sensor_id] = {
+      let sensorData = formattedResult.find(sensor => sensor.sensor_id === row.sensor_id);
+      if (!sensorData) {
+        sensorData = {
+          sensor_id: row.sensor_id,
           sensor_type: row.sensor_type_name,
-          sensor_data: {}
+          sensor_data: {
+            timestamps: [],
+            readings: []
+          }
         };
+        formattedResult.push(sensorData);
       }
-      formattedResult[row.sensor_id].sensor_data[formattedTime] = row.reading_value;
+      sensorData.sensor_data.timestamps.push(formattedTime);
+      sensorData.sensor_data.readings.push(row.reading_value);
     });
 
     res.status(200).json(formattedResult);

@@ -11,12 +11,11 @@ export default function Dashboard() {
     const [selectedAcadBlock, setSelectedAcadBlock] = useState("");
     const [acadBlockTitle, setAcadBlockTitle] = useState("Academic Block");
     const [selectedRoom, setSelectedRoom] = useState("");
-    const [sensorData, setSensorData] = useState<{ time: string, value: number }[]>([]);
+    const [sensorData, setSensorData] = useState<{ sensor_data: { timestamps: any[]; readings: any[] }; sensor_type: string }[]>([]);
 
     const fetchLocations = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/locations');
-            const data = response.data;
+            const data = (await axios.get('http://localhost:5000/locations')).data
             const grouped = data.reduce((acc: { [key: string]: number[] }, item: { building: string; room_number: number }) => {
                 const building = item.building;
                 if (!acc[building]) {
@@ -39,21 +38,9 @@ export default function Dashboard() {
 
     const fetchSensorData = async (block: string, room: string) => {
         try {
-            const loc_data = await axios.get('http://localhost:5000/locations');
-            // console.log(loc_data);
-            const loc_id = loc_data.data.find((loc: { building: string; room_number: number }) => loc.building === block && loc.room_number === parseInt(room)).location_id;
-            // console.log(loc_id);
-            const sensor_data = await axios.get(`http://localhost:5000/sensors`);
-            // console.log(sensor_data);
-            const sensors_at_loc = sensor_data.data.filter((sensor: { location_id: number }) => sensor.location_id === loc_id);
-            console.log(sensors_at_loc);
-            sensors_at_loc.forEach(async (sensor: { sensor_id: number }) => {
-                const sensor_readings = await axios.get(`http://localhost:5000/sensors/${sensor.sensor_id}/readings`);
-                console.log(sensor_readings);
-                const readings = sensor_readings.data;
-                setSensorData(readings);
-            }
-            );
+            const sensor_data = (await axios.get(`http://localhost:5000/sensors/${block}/${room}/readings`)).data;
+            console.log("Sensor data:", sensor_data);
+            setSensorData(sensor_data);
         } catch (error) {
             console.error('Error fetching sensor data:', error);
         }
@@ -82,6 +69,16 @@ export default function Dashboard() {
         console.log("Selected room:", item);
     };
 
+    const chartData = sensorData.map((data, index) => ({
+        labels: data.sensor_data.timestamps,
+        datasets: [{
+            label: data.sensor_type,
+            data: data.sensor_data.readings,
+            fill: false,
+            borderColor: `hsl(${index * 50}, 100%, 50%)`,
+        }],
+    }));
+
     return (
         <div className="container my-3 text-center d-flex flex-column align-items-center">
             <div className="d-flex justify-content-around w-100 mb-3">
@@ -99,9 +96,7 @@ export default function Dashboard() {
                 />
             </div>
             {selectedAcadBlock && selectedRoom && sensorData.length > 0 && (
-                <div className="d-flex flex-wrap justify-content-around w-100">
-                    <Plot chartData={chartData} />
-                </div>
+                <Plot chartData={chartData} />
             )}
         </div>
     );
