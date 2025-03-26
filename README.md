@@ -123,3 +123,5 @@ Before starting, ensure you have the following installed on your machine:
    ```
 
 ---
+
+**Note**: For using Makefile for linux OS, copy the content of Makefile_linux and paste it into Makefile. Then, you'll be able to use it in linux.
