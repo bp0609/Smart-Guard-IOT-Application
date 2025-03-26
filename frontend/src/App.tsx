@@ -26,7 +26,7 @@ function App() {
           <h1>Smart Guard IOT Application</h1>
         </div>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Dashboard mode={mode} />} />
         </Routes>
       </Router>
     </>

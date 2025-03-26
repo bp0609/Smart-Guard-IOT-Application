@@ -6,7 +6,7 @@ import Plot from "./Plot";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-export default function Dashboard() {
+export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
     const [locations, setLocations] = useState<{ [key: string]: number[] }>({});
     const [selectedAcadBlock, setSelectedAcadBlock] = useState("");
     const [acadBlockTitle, setAcadBlockTitle] = useState("Academic Block");
@@ -69,15 +69,22 @@ export default function Dashboard() {
         console.log("Selected room:", item);
     };
 
-    const chartData = sensorData.map((data, index) => ({
+    const sortedSensorData = sensorData.slice().sort((a, b) =>
+        a.sensor_type.localeCompare(b.sensor_type)
+    );
+
+    const chartData = sortedSensorData.map((data, index) => ({
         labels: data.sensor_data.timestamps,
-        datasets: [{
-            label: data.sensor_type,
-            data: data.sensor_data.readings,
-            fill: false,
-            borderColor: `hsl(${index * 50}, 100%, 50%)`,
-        }],
+        datasets: [
+            {
+                label: data.sensor_type,
+                data: data.sensor_data.readings,
+                fill: false,
+                borderColor: `hsl(${index * 50}, 100%, 50%)`,
+            },
+        ],
     }));
+
 
     return (
         <div className="container my-3 text-center d-flex flex-column align-items-center">
@@ -96,7 +103,7 @@ export default function Dashboard() {
                 />
             </div>
             {selectedAcadBlock && selectedRoom && sensorData.length > 0 && (
-                <Plot chartData={chartData} />
+                <Plot chartData={chartData} mode={mode} />
             )}
         </div>
     );
