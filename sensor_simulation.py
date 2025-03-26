@@ -23,13 +23,13 @@ def send_readings(sensor_id, duration, server_url):
         
         time.sleep(3)
 
-def create_sensor(server_url,location_id, sensor_type_id):
+def create_sensor(server_url,location_id, sensor_type):
     installation_date = datetime.now().strftime('%Y-%m-%d')  # Current date in YYYY-MM-DD
     status = 'active'                   
 
     # Construct the payload for the POST request
     payload = {
-        "sensor_type_id": sensor_type_id,
+        "sensor_type": sensor_type,
         "location_id": location_id,
         "installation_date": installation_date,
         "status": status
@@ -70,6 +70,7 @@ def create_location(server_url,num_location,num_rooms):
                     print(f"Created location with ID {location_id}: {location_name}")
                     locations.append(location_id)
                 else:
+                    print(response.json())
                     print(f"Failed to create location {location_name}, status {response.status_code}")
             except Exception as e:
                 print(f"Error creating location {location_name}: {e}")
@@ -77,14 +78,14 @@ def create_location(server_url,num_location,num_rooms):
 
 def main():
     # Configuration
-    sensor_types = 4
+    sensor_types = ["temperature", "humidity", "light", "air_quality"]
     duration = 90
     server_url = "http://localhost:5000"
     location_ids=create_location(server_url,10,10)
     sensor_ids = []
     for location_id in location_ids:
-        for sensor_type_id in range(sensor_types):
-            sensor_id = create_sensor(server_url,location_id,sensor_type_id+1)
+        for sensor_type in sensor_types:
+            sensor_id = create_sensor(server_url,location_id,sensor_type)
             if sensor_id is not None:
                 sensor_ids.append(sensor_id)
 

@@ -25,17 +25,22 @@ export const getSensorById = async (req: Request, res: Response):Promise<any> =>
 };
 
 export const createSensor = async (req: Request, res: Response):Promise<any> => {
-  const { sensor_type_id, location_id, installation_date, status } = req.body;
+  const { sensor_type, location_id, installation_date, status } = req.body;
   try {
+    const sensorTypeResult = await pool.query('SELECT * FROM sensortypes WHERE sensor_type_name = $1', [sensor_type]);
+    if (sensorTypeResult.rowCount === 0) {
+      return res.status(400).json({ message: 'Invalid sensor_type_id' });
+    }
+    const sensor_type_id = sensorTypeResult.rows[0].sensor_type_id;
     const result = await pool.query(
       `INSERT INTO Sensors (sensor_type_id, location_id, installation_date, status)
        VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [sensor_type_id, location_id, installation_date, status]
+      [sensor_type_id, location_id, installation_date || (new Date()).toISOString(), status]
     );
     res.status(201).json(result.rows[0]);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to create sensor', message: error.message });
+    res.status(500).json({ error: 'Failed to add sensor', message: error.message });
   }
 };
 
