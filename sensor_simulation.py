@@ -23,14 +23,15 @@ def send_readings(sensor_id, duration, server_url):
         
         time.sleep(3)
 
-def create_sensor(server_url,location_id, sensor_type):
+def create_sensor(server_url,building, room_number, sensor_type):
     installation_date = datetime.now().strftime('%Y-%m-%d')  # Current date in YYYY-MM-DD
     status = 'active'                   
 
     # Construct the payload for the POST request
     payload = {
         "sensor_type": sensor_type,
-        "location_id": location_id,
+        "building": building,
+        "room_number": room_number,
         "installation_date": installation_date,
         "status": status
     }
@@ -53,7 +54,8 @@ def create_sensor(server_url,location_id, sensor_type):
 
 def create_location(server_url,num_location,num_rooms):
     # Generate random data
-    locations = []
+    buildings = []
+    rooms=[]
     for i in range(1, num_location + 1):
         building_name = f"AB{i}"
         for room in range(101, 101 + num_rooms):
@@ -68,24 +70,27 @@ def create_location(server_url,num_location,num_rooms):
                 if response.status_code == 201:
                     location_id = response.json().get('location_id')  # Adjust key if necessary
                     print(f"Created location with ID {location_id}: {location_name}")
-                    locations.append(location_id)
+                    buildings.append(building_name)
+                    rooms.append(room)
                 else:
                     print(response.json())
                     print(f"Failed to create location {location_name}, status {response.status_code}")
             except Exception as e:
                 print(f"Error creating location {location_name}: {e}")
-    return locations
+    return buildings,rooms
 
 def main():
     # Configuration
     sensor_types = ["temperature", "humidity", "light", "air_quality"]
     duration = 90
     server_url = "http://localhost:5000"
-    location_ids=create_location(server_url,10,10)
+    buildings,rooms=create_location(server_url,10,10)
+    print(buildings)
+    print(rooms)
     sensor_ids = []
-    for location_id in location_ids:
+    for i in range(len(buildings)):
         for sensor_type in sensor_types:
-            sensor_id = create_sensor(server_url,location_id,sensor_type)
+            sensor_id = create_sensor(server_url,buildings[i],rooms[i],sensor_type)
             if sensor_id is not None:
                 sensor_ids.append(sensor_id)
 
