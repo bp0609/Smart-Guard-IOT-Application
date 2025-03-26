@@ -1,6 +1,7 @@
 // src/controllers/sensorController.ts
 import { Request, Response } from 'express';
 import pool from '../db';
+import { error } from 'console';
 
 export const getSensors = async (req: Request, res: Response):Promise<any> => {
   try {
@@ -29,12 +30,12 @@ export const createSensor = async (req: Request, res: Response):Promise<any> => 
   try {
     const location_id_result = await pool.query('SELECT location_id FROM Locations WHERE building = $1 AND room_number = $2', [building, room_number]);
     if (location_id_result.rowCount === 0) {
-      return res.status(400).json({ message: 'Invalid location' });
+      return res.status(400).json({ error: 'Invalid location_id', message: 'Location not found' });
     }
     const location_id = location_id_result.rows[0].location_id;
     const sensorTypeResult = await pool.query('SELECT * FROM sensortypes WHERE sensor_type_name = $1', [sensor_type]);
     if (sensorTypeResult.rowCount === 0) {
-      return res.status(400).json({ message: 'Invalid sensor_type_id' });
+      return res.status(400).json({ error: 'Invalid sensor_type', message: 'Sensor type not found' });
     }
     const sensor_type_id = sensorTypeResult.rows[0].sensor_type_id;
     const result = await pool.query(
@@ -64,7 +65,7 @@ export const updateSensor = async (req: Request, res: Response):Promise<any> => 
       [id, sensor_type_id, location_id, installation_date, status]
     );
     if (result.rowCount === 0) {
-      return res.status(404).json({ message: 'Sensor not found' });
+      return res.status(404).json({ error: 'Sensor not found', message: 'Sensor not found'});
     }
     res.status(200).json(result.rows[0]);
   } catch (error: any) {
@@ -77,7 +78,7 @@ export const deleteSensor = async (req: Request, res: Response):Promise<any> => 
   try {
     const result = await pool.query('DELETE FROM Sensors WHERE sensor_id = $1', [id]);
     if (result.rowCount === 0) {
-      return res.status(404).json({ message: 'Sensor not found' });
+      return res.status(404).json({ error: 'Sensor not found', message: 'Sensor not found' });
     }
     res.status(204).send();
   } catch (error: any) {

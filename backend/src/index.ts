@@ -7,6 +7,7 @@ import locationsRoute from "./routes/locationRoutes";
 import sensorsRoute from "./routes/sensorRoutes";
 import sensorReadingsRoute from "./routes/sensorReadingRoutes";
 import alertsRoute from "./routes/alertRoutes";
+import sensorTypesRoute from "./routes/sensorTypeRoutes";
 
 dotenv.config();
 
@@ -24,10 +25,7 @@ app.use('/locations', locationsRoute);
 app.use('/sensors', sensorsRoute);
 app.use('/sensors', sensorReadingsRoute);
 app.use('/alerts', alertsRoute);
-
-app.get('/api/acad_blocks', (req, res) => {
-  res.json(['AB 1', 'AB 2', 'AB 3']);
-});
+app.use('/sensor_types', sensorTypesRoute);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
