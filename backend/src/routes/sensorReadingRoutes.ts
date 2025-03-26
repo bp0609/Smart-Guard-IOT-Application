@@ -1,6 +1,6 @@
 // src/routes/sensorReadingRoutes.ts
 import { Router } from 'express';
-import { getSensorReadings, createSensorReading } from '../controllers/sensorReadingController';
+import { getSensorReadings, createSensorReading, getSensorReadingsByLocation } from '../controllers/sensorReadingController';
 
 const router = Router();
 
@@ -9,4 +9,5 @@ router.get('/:sensorId/readings', getSensorReadings);  // GET /sensors/:sensorId
 
 router.post('/:sensorId/readings', createSensorReading);  // POST /sensors/:sensorId/readings
 
+router.get('/:building/:room_number/readings', getSensorReadingsByLocation);  // GET /sensors/:building/:room_number/readings
 export default router;

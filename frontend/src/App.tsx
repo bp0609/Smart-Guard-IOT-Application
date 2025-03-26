@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import Home from './components/Home';
+import Dashboard from './components/Dashboard';
 
 function App() {
   const [mode, setMode] = useState<'light' | 'dark'>('light');
@@ -10,7 +10,7 @@ function App() {
   const toggleMode = () => {
     if (mode === 'light') {
       setMode('dark');
-      document.body.style.backgroundColor = '#343a40';
+      document.body.style.backgroundColor = '#132021';
       document.body.style.color = 'white';
     } else {
       setMode('light');
@@ -26,7 +26,7 @@ function App() {
           <h1>Smart Guard IOT Application</h1>
         </div>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Dashboard mode={mode} />} />
         </Routes>
       </Router>
     </>
