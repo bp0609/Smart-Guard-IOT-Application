@@ -90,7 +90,7 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
         labels: data.sensor_data.timestamps,
         datasets: [
             {
-                label: data.sensor_type,
+                label: data.sensor_type.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase()),
                 data: data.sensor_data.readings,
                 fill: false,
                 borderColor: `hsl(${index * 50}, 100%, 50%)`,

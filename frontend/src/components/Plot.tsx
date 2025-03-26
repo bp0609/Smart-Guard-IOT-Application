@@ -4,9 +4,7 @@ import { Line } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 export default function Plot({ chartData, mode }: { chartData: any; mode: 'light' | 'dark' }) {
-    // Define colors based on the mode
     const textColor = mode === 'light' ? '#000' : '#ccc';
-    // If you want a different color for grid lines, you can adjust it here
     const gridColor = mode === 'light' ? '#ccc' : '#777';
 
     return (
@@ -18,11 +16,6 @@ export default function Plot({ chartData, mode }: { chartData: any; mode: 'light
                             data={data}
                             options={{
                                 plugins: {
-                                    title: {
-                                        display: true,
-                                        text: 'Chart Title',
-                                        color: textColor
-                                    },
                                     legend: {
                                         labels: {
                                             color: textColor
