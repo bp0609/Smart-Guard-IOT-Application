@@ -23,6 +23,7 @@ help:
 	@echo "  make build-backend   - Build the backend (TypeScript to JavaScript)"
 	@echo "  make build-frontend  - Build the frontend (Vite build)"
 	@echo "  make start           - Start both backend and frontend concurrently"
+	@echo "  make reset-db        - Reset the database (migrate-down --> migrate-up --> seed-db)"
 
 # Start the backend in development mode
 start-backend:
