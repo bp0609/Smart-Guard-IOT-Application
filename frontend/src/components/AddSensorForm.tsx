@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
-export default function ({ id, label, sensor_types }: { id: string, label: string, sensor_types: string[] }) {
+export default function ({ id, label, sensor_types, mode }: { id: string, label: string, sensor_types: string[], mode: 'light' | 'dark' }) {
 
     const checkValidity = (e: any) => {
         if (e.target.id === "acadblock") {
@@ -21,7 +21,7 @@ export default function ({ id, label, sensor_types }: { id: string, label: strin
         }
     }
 
-    const [response, setResponse] = useState<{ sensor_id?: string, error?: string, message?: string }>({});
+    const [response, setResponse] = useState<{ sensor_id?: string, error?: string }>({});
 
     const addSensor = async () => {
         const sensorType = (document.getElementById("sensorType") as HTMLSelectElement).value;
@@ -67,7 +67,7 @@ export default function ({ id, label, sensor_types }: { id: string, label: strin
         <>
             <div className="modal fade" id={id} tabIndex={-1} aria-labelledby={label} aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered">
-                    <div className="modal-content">
+                    <div className={`modal-content bg-${mode === 'light' ? 'light' : 'dark'} text-${mode === 'light' ? 'dark' : 'light'}`}>
                         <div className="modal-header">
                             <h1 className="modal-title fs-5" id={label}>Add New Sensors</h1>
                             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -76,8 +76,8 @@ export default function ({ id, label, sensor_types }: { id: string, label: strin
                             <form>
                                 <div className="mb-3">
                                     <label htmlFor="sensorType" className="col-form-label">Sensor Type</label>
-                                    {/* Dropdown to select possible sensors */}
-                                    <select className="form-select" id="sensorType">
+                                    <select className={`form-select bg-${mode === 'light' ? 'light' : 'dark'} text-${mode === 'light' ? 'dark' : 'light'}`}
+                                        id="sensorType">
                                         {sensor_types.map((type: string, index: number) => (
                                             <option key={index} value={type}>{type}</option>
                                         ))}
@@ -85,11 +85,11 @@ export default function ({ id, label, sensor_types }: { id: string, label: strin
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="acadblock" className="col-form-label">Acad. Block (Eg. AB1, AB2, etc.)</label>
-                                    <input className="form-control" id="acadblock" type="string" onChange={checkValidity} />
+                                    <input className={`form-control bg-${mode === 'light' ? 'light' : 'dark'} text-${mode === 'light' ? 'dark' : 'light'}`} id="acadblock" type="string" onChange={checkValidity} />
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="roomNumber" className="col-form-label">Room Number (Eg. 101, 103, etc.)</label>
-                                    <input className="form-control" id="roomNumber" type="number" max={1000} onChange={checkValidity} />
+                                    <input className={`form-control bg-${mode === 'light' ? 'light' : 'dark'} text-${mode === 'light' ? 'dark' : 'light'}`} id="roomNumber" type="number" max={1000} onChange={checkValidity} />
                                 </div>
                             </form>
                         </div>
@@ -101,7 +101,7 @@ export default function ({ id, label, sensor_types }: { id: string, label: strin
                             )}
                             {response.error && (
                                 <div className="alert alert-danger" role="alert">
-                                    {response.message}
+                                    {response.error}
                                 </div>
                             )}
 

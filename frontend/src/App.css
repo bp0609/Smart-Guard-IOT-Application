@@ -6,3 +6,23 @@
 .tbl-btn {
   transition: all 0.1s ease-in-out;
 }
+
+.dropdown-item.custom-light {
+  color: #000;
+}
+.dropdown-item.custom-dark {
+  color: #fff;
+}
+.dropdown-item.custom-dark:disabled {
+  color: #6c757d;
+} 
+
+
+.dropdown-item.custom-light:hover {
+  background-color: #e9ecef !important;
+  color: #000;
+}
+.dropdown-item.custom-dark:hover {
+  background-color: #495057 !important;
+  color: #fff;
+}

@@ -107,6 +107,7 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
                         title={acadBlockTitle}
                         items={Object.keys(locations).sort()}
                         onSelect={handleAcadBlockSelect}
+                        mode={mode}
                     />
                     <Dropdown
                         title={selectedRoom || "Room Number"}
@@ -114,13 +115,14 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
                         onSelect={handleRoomSelect}
                         disabled={!selectedAcadBlock}
                         disable_msg="Select an academic block first"
+                        mode={mode}
                     />
                 </div>
                 {selectedAcadBlock && selectedRoom && sensorData.length > 0 && (
                     <Plot chartData={chartData} mode={mode} />
                 )}
             </div>
-            <AddSensorForm id="exampleModal" label="exampleModalLabel" sensor_types={sensor_types} />
+            <AddSensorForm id="exampleModal" label="exampleModalLabel" sensor_types={sensor_types} mode={mode} />
         </>
     );
 }
