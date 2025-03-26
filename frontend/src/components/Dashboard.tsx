@@ -39,8 +39,21 @@ export default function Dashboard() {
 
     const fetchSensorData = async (block: string, room: string) => {
         try {
-            const response = await axios.get(`http://localhost:5000/sensor-data?block=${block}&room=${room}`);
-            setSensorData(response.data);
+            const loc_data = await axios.get('http://localhost:5000/locations');
+            // console.log(loc_data);
+            const loc_id = loc_data.data.find((loc: { building: string; room_number: number }) => loc.building === block && loc.room_number === parseInt(room)).location_id;
+            // console.log(loc_id);
+            const sensor_data = await axios.get(`http://localhost:5000/sensors`);
+            // console.log(sensor_data);
+            const sensors_at_loc = sensor_data.data.filter((sensor: { location_id: number }) => sensor.location_id === loc_id);
+            console.log(sensors_at_loc);
+            sensors_at_loc.forEach(async (sensor: { sensor_id: number }) => {
+                const sensor_readings = await axios.get(`http://localhost:5000/sensors/${sensor.sensor_id}/readings`);
+                console.log(sensor_readings);
+                const readings = sensor_readings.data;
+                setSensorData(readings);
+            }
+            );
         } catch (error) {
             console.error('Error fetching sensor data:', error);
         }
@@ -53,15 +66,8 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (selectedAcadBlock && selectedRoom) {
-            setSensorData([
-                { time: '2023-01-01T00:00:00Z', value: 20 },
-                { time: '2023-01-01T01:00:00Z', value: 21 },
-                { time: '2023-01-01T02:00:00Z', value: 19 },
-                { time: '2023-01-01T03:00:00Z', value: 22 },
-                { time: '2023-01-01T04:00:00Z', value: 20 },
-            ]);
+            fetchSensorData(selectedAcadBlock, selectedRoom);
         }
-        // fetchSensorData(selectedAcadBlock, selectedRoom);
     }, [selectedAcadBlock, selectedRoom]);
 
     const handleAcadBlockSelect = (item: string) => {
@@ -74,18 +80,6 @@ export default function Dashboard() {
     const handleRoomSelect = (item: string) => {
         setSelectedRoom(item);
         console.log("Selected room:", item);
-    };
-
-    const chartData = {
-        labels: sensorData.map(data => new Date(data.time).toLocaleString([], { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })),
-        datasets: [
-            {
-                label: 'Sensor Data',
-                data: sensorData.map(data => data.value),
-                borderColor: 'rgba(75,192,192,1)',
-                backgroundColor: 'rgba(75,192,192,0.2)',
-            },
-        ],
     };
 
     return (
@@ -106,9 +100,6 @@ export default function Dashboard() {
             </div>
             {selectedAcadBlock && selectedRoom && sensorData.length > 0 && (
                 <div className="d-flex flex-wrap justify-content-around w-100">
-                    <Plot chartData={chartData} />
-                    <Plot chartData={chartData} />
-                    <Plot chartData={chartData} />
                     <Plot chartData={chartData} />
                 </div>
             )}
