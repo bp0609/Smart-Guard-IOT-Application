@@ -86,6 +86,14 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
         a.sensor_type.localeCompare(b.sensor_type)
     );
 
+    const getBorderColor = (index: number) => {
+        const lightModeColors = ['#3B82F6', '#F59E0B', '#10B981', '#06B6D4', '#8B5CF6', '#FCD34D'];
+        const darkModeColors = ['#1E3A8A', '#B45309', '#047857', '#0891B2', '#5B21B6', '#CA8A04'];
+        const colors = mode === 'light' ? lightModeColors : darkModeColors;
+        return colors[index % colors.length];
+    };
+
+
     const chartData = sortedSensorData.map((data, index) => ({
         labels: data.sensor_data.timestamps,
         datasets: [
@@ -93,9 +101,10 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
                 label: data.sensor_type.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase()),
                 data: data.sensor_data.readings,
                 fill: false,
-                borderColor: `hsl(${index * 50}, 100%, 50%)`,
+                borderColor: getBorderColor(index),
             },
         ],
+        threshold: Math.floor(Math.random() * 11) + 40, // Random threshold between 40 and 50
     }));
 
 
