@@ -16,7 +16,7 @@ function App() {
     } else {
       setMode('light');
       document.body.style.backgroundColor = '#fff';
-      document.body.style.color = '#000';
+      document.body.style.color = '#000';  
     }
   };
 
