@@ -110,22 +110,26 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
 
     return (
         <>
-            <div className="container my-3 text-center d-flex flex-column align-items-center">
-                <div className="d-flex justify-content-around w-100 mb-3">
-                    <Dropdown
-                        title={acadBlockTitle}
-                        items={Object.keys(locations).sort()}
-                        onSelect={handleAcadBlockSelect}
-                        mode={mode}
-                    />
-                    <Dropdown
-                        title={selectedRoom || "Room Number"}
-                        items={selectedAcadBlock ? locations[selectedAcadBlock].map(String).sort() : []}
-                        onSelect={handleRoomSelect}
-                        disabled={!selectedAcadBlock}
-                        disable_msg="Select an academic block first"
-                        mode={mode}
-                    />
+            <div className="container my-3 text-center">
+                <div className="row justify-content-center my-4">
+                    <div className="col-12 col-md-auto mb-3 mb-md-0">
+                        <Dropdown
+                            title={acadBlockTitle}
+                            items={Object.keys(locations).sort()}
+                            onSelect={handleAcadBlockSelect}
+                            mode={mode}
+                        />
+                    </div>
+                    <div className="col-12 col-md-auto">
+                        <Dropdown
+                            title={selectedRoom || "Room Number"}
+                            items={selectedAcadBlock ? locations[selectedAcadBlock].map(String).sort() : []}
+                            onSelect={handleRoomSelect}
+                            disabled={!selectedAcadBlock}
+                            disable_msg="Select an academic block first"
+                            mode={mode}
+                        />
+                    </div>
                 </div>
                 {selectedAcadBlock && selectedRoom && sensorData.length > 0 && (
                     <Plot chartData={chartData} mode={mode} />
@@ -133,5 +137,6 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
             </div>
             <AddSensorForm id="exampleModal" label="exampleModalLabel" sensor_types={sensor_types} mode={mode} />
         </>
+
     );
 }

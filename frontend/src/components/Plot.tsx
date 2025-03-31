@@ -1,66 +1,78 @@
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { useRef, useEffect } from 'react';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-export default function Plot({ chartData, mode }: { chartData: any; mode: 'light' | 'dark' }) {
+export default function Plot({ chartData, mode }: { chartData: any[]; mode: 'light' | 'dark' }) {
+    const chartRef = useRef<ChartJS>(null!);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (chartRef.current) {
+                chartRef.current.update();
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const textColor = mode === 'light' ? '#000' : '#ccc';
     const gridColor = mode === 'light' ? '#ccc' : '#777';
 
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            tooltip: {
+                backgroundColor: mode === 'light' ? '#fff' : '#333',
+                titleColor: textColor,
+                bodyColor: textColor,
+                borderColor: mode === 'light' ? '#ccc' : '#777',
+                borderWidth: 1
+            },
+            legend: {
+                display: true,
+                labels: {
+                    color: textColor
+                }
+            }
+        },
+        scales: {
+            x: {
+                ticks: {
+                    color: textColor,
+                    maxTicksLimit: 5
+                },
+                grid: {
+                    color: gridColor
+                }
+            },
+            y: {
+                ticks: {
+                    color: textColor
+                },
+                grid: {
+                    color: gridColor
+                }
+            }
+        }
+    };
+
     return (
-        <div className="d-flex flex-wrap justify-content-around w-100">
-            {chartData.map((data: any, index: number) => {
-                const latestValue = data.datasets[0].data[data.datasets[0].data.length - 1];
-                const threshold = data.threshold; // Assuming threshold is passed in chartData
+        <div className="container-fluid">
+            <div className="row">
+                {chartData.map((data, index) => {
+                    const latestValue = data.datasets[0].data[data.datasets[0].data.length - 1];
+                    const threshold = data.threshold;
+                    const isDanger = latestValue > threshold;
 
-                const isDanger = latestValue > threshold;
-
-                return (
-                    <div className="w-50 mb-3 align-items-center position-relative" key={index}>
-                        <div className="mb-3">
-                            <Line
-                                data={data}
-                                options={{
-                                    interaction: {
-                                        mode: 'index',
-                                        intersect: false
-                                    },
-                                    plugins: {
-                                        tooltip: {
-                                            backgroundColor: mode === 'light' ? '#fff' : '#333',
-                                            titleColor: textColor,
-                                            bodyColor: textColor,
-                                            borderColor: mode === 'light' ? '#ccc' : '#777',
-                                            borderWidth: 1
-                                        },
-                                        legend: {
-                                            display: true,
-                                            labels: {
-                                                color: textColor
-                                            }
-                                        }
-                                    },
-                                    scales: {
-                                        x: {
-                                            ticks: {
-                                                color: textColor,
-                                                maxTicksLimit: 5
-                                            },
-                                            grid: {
-                                                color: gridColor
-                                            }
-                                        },
-                                        y: {
-                                            ticks: {
-                                                color: textColor
-                                            },
-                                            grid: {
-                                                color: gridColor
-                                            }
-                                        }
-                                    }
-                                }}
-                            />
+                    return (
+                        <div className="col-12 col-md-6 mb-3 position-relative" key={index}>
+                            {/* Chart container with no fixed height, letting Chart.js handle it */}
+                            <div style={{ position: 'relative', width: '100%', height: '300px' }}>
+                                <Line ref={(instance) => { if (instance) chartRef.current = instance; }} data={data} options={options} />
+                            </div>
                             <div
                                 style={{
                                     position: 'absolute',
@@ -81,9 +93,9 @@ export default function Plot({ chartData, mode }: { chartData: any; mode: 'light
                                 {latestValue}
                             </div>
                         </div>
-                    </div>
-                );
-            })}
+                    );
+                })}
+            </div>
         </div>
     );
 }
