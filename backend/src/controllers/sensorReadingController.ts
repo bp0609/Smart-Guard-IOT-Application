@@ -19,12 +19,53 @@ export const createSensorReading = async (req: Request, res: Response):Promise<a
   const { sensorId } = req.params;
   const { reading_value } = req.body;
   try {
+    const sensorTypeResult = await pool.query(
+      `SELECT low_threshold, high_threshold
+       FROM SensorTypes st
+       JOIN Sensors s ON st.sensor_type_id = s.sensor_type_id
+       WHERE s.sensor_id = $1`,
+      [sensorId]
+    );
+
+    if (sensorTypeResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Sensor type not found' });
+    }
+
+    const { low_threshold, high_threshold } = sensorTypeResult.rows[0];
+    
     const result = await pool.query(
       `INSERT INTO SensorReadings (sensor_id, reading_value)
        VALUES ($1, $2)
        RETURNING *`,
       [sensorId, reading_value]
     );
+
+    if ((low_threshold && reading_value < low_threshold) || (high_threshold && reading_value > high_threshold)) {
+      // insert the reading into alert table
+      const alertResult = await pool.query(
+        `INSERT INTO Alerts (sensor_id, alert_time, reading_id)
+         VALUES ($1, NOW(), $2)
+         RETURNING *`,
+        [sensorId, result.rows[0].reading_id]
+      );
+      if (alertResult.rowCount === 0) {
+        return res.status(500).json({ error: 'Failed to create alert' });
+      }
+      // Notify the user about the alert
+      // You can use a notification service or send an email here
+      console.log(`\n Alert created for sensor ${sensorId}: ${alertResult.rows[0].alert_time}`);
+    }
+    else{
+      // make resolved column true for this sensor id
+      console.log("\n Alert Resolved");
+      const alertResult = await pool.query(
+        `UPDATE Alerts
+         SET resolved = true
+         WHERE sensor_id = $1 AND resolved = false`,
+        [sensorId]
+      );
+      console.log(alertResult.rowCount);
+    }
     res.status(201).json(result.rows[0]);
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to create sensor reading', message: error.message });

@@ -24,10 +24,14 @@ export default function Navbar({ title = 'NavBar', mode = 'light', toggleMode }:
                 </button>
                 <div className="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li className="nav-item">
+                        {/* <li className="nav-item">
                             <Link className="nav-link" to="/">Home</Link>
-                        </li>
+                        </li> */}
                     </ul>
+                    {window.location.pathname === '/' && (
+                        <button type="button" className="btn btn-secondary mx-3" data-bs-toggle="modal" data-bs-target="#exampleModal">Add Sensors</button>
+                    )}
+
                     <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
                         {(mode === 'light') ? 'Light' : 'Dark'} mode
                     </label>

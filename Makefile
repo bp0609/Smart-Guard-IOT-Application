@@ -38,26 +38,26 @@ start-frontend:
 # Create the PostgreSQL database
 create-db:
 	@echo "Creating database $(DB_NAME)..."
-	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -c "CREATE DATABASE $(DB_NAME);" || true
+	@echo "$(DB_PASSWORD)" | psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d postgres -c "CREATE DATABASE $(DB_NAME);" || true
 # Drop the PostgreSQL database
 drop-db:
 	@echo "Dropping database $(DB_NAME)..."
-	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -c "DROP DATABASE IF EXISTS $(DB_NAME);" || true
+	@echo "$(DB_PASSWORD)" | psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d postgres -c "DROP DATABASE IF EXISTS $(DB_NAME);" || true
 
 # Run database schema up migrations
 migrate-up:
 	@echo "Running database up migrations..."
-	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/migration/up.sql
+	@echo "$(DB_PASSWORD)" | psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/migration/up.sql
 
 # Run database schema down migrations
 migrate-down:
 	@echo "Running database down migrations..."
-	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/migration/down.sql
+	@echo "$(DB_PASSWORD)" | psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/migration/down.sql
 
 # Seed the database with initial data
 seed-db:
 	@echo "Seeding database..."
-	@PGPASSWORD=$(DB_PASSWORD) psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/seed.sql
+	@echo "$(DB_PASSWORD)" | psql -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) -d $(DB_NAME) -f db/seed.sql
 
 # Clean the database (drop, create, migrate, seed)
 reset-db: migrate-down migrate-up seed-db
