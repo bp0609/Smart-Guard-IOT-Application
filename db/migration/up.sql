@@ -15,6 +15,7 @@ CREATE TABLE SensorTypes (
     low_threshold DECIMAL(10,2),               
     high_threshold DECIMAL(10,2),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    UNIQUE(sensor_type_name)
 );
 
 -- 3. Sensors Table: store individual sensor information, like its location, status, and installation date.
