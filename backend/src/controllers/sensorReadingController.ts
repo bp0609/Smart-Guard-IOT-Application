@@ -74,6 +74,10 @@ export const createSensorReading = async (req: Request, res: Response):Promise<a
 
 export const getSensorReadingsByLocation = async (req: Request, res: Response):Promise<any> => {
   const { building, room_number } = req.params;
+  const {start_time, end_time} = req.body;
+  console.log(req.body);
+  console.log("Start time: ", start_time);
+  console.log("End time: ", end_time);
   try {
     const locationResult = await pool.query(
       `SELECT location_id

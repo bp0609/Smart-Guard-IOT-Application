@@ -2,23 +2,6 @@
 import { Request, Response } from 'express';
 import pool from '../db';
 
-/**
- * Retrieves all sensor types from the database.
- * 
- * This function queries the `SensorTypes` table in the database
- * and returns a list of all available sensor types. It is used
- * to provide information about the types of sensors supported
- * by the system.
- * 
- * @param req - The HTTP request object.
- * @param res - The HTTP response object.
- * @returns A promise that resolves to a JSON response containing
- *          the list of sensor types or an error message if the
- *          operation fails.
- * 
- * @throws 500 - If there is an error while fetching sensor types
- *               from the database.
- */
 export const getSensorTypes = async (req: Request, res: Response):Promise<any> => {
   try {
     const result = await pool.query('SELECT * FROM SensorTypes');
