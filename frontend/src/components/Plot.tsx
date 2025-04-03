@@ -23,6 +23,10 @@ export default function Plot({ chartData, mode }: { chartData: any[]; mode: 'lig
     const options = {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+            mode: 'index' as const,
+            intersect: false
+        },
         plugins: {
             tooltip: {
                 backgroundColor: mode === 'light' ? '#fff' : '#333',
@@ -64,12 +68,10 @@ export default function Plot({ chartData, mode }: { chartData: any[]; mode: 'lig
             <div className="row">
                 {chartData.map((data, index) => {
                     const latestValue = data.datasets[0].data[data.datasets[0].data.length - 1];
-                    const threshold = data.threshold;
-                    const isDanger = latestValue > threshold;
+                    const isDanger = latestValue < data.thresholds.min || latestValue > data.thresholds.max;
 
                     return (
                         <div className="col-12 col-md-6 mb-3 position-relative" key={index}>
-                            {/* Chart container with no fixed height, letting Chart.js handle it */}
                             <div style={{ position: 'relative', width: '100%', height: '300px' }}>
                                 <Line ref={(instance) => { if (instance) chartRef.current = instance; }} data={data} options={options} />
                             </div>

@@ -1,7 +1,7 @@
 BACKEND_DIR=backend
 FRONTEND_DIR=frontend
 DB_USER=postgres
-DB_NAME=smart_guard
+DB_NAME=postgres
 DB_HOST=localhost
 DB_PORT=5432
 

@@ -1,13 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import PageNotFound from './components/PageNotFound';
+import AlertsPage from './components/Alertspage';
+import AddSensorForm from './components/AddSensorForm';
+import { fetchSensorTypes } from './utils/fetch';
 
 function App() {
+  const [isAlert, setIsAlert] = useState(false);
   const [mode, setMode] = useState<'light' | 'dark'>('light');
-
   const toggleMode = () => {
     if (mode === 'light') {
       setMode('dark');
@@ -16,19 +19,26 @@ function App() {
     } else {
       setMode('light');
       document.body.style.backgroundColor = '#fff';
-      document.body.style.color = '#000';  
+      document.body.style.color = '#000';
     }
   };
+
+  const [sensor_types, setSensorTypes] = useState<string[]>([]);
+  useEffect(() => {
+    fetchSensorTypes(setSensorTypes);
+  }, []);
 
   return (
     <>
       <Router>
-        <Navbar title="SG-IOT" mode={mode} toggleMode={toggleMode} />
+        <Navbar title="SG-IOT" mode={mode} toggleMode={toggleMode} setSensorType={setSensorTypes} isAlert={isAlert} />
         <div className="container my-3 text-center">
           <h1>Smart Guard IOT Application</h1>
+          <AddSensorForm id="addSensor" label="addSensorLabel" sensor_types={sensor_types} mode={mode} />
         </div>
         <Routes>
           <Route path="/" element={<Dashboard mode={mode} />} />
+          <Route path="/alerts" element={<AlertsPage mode={mode} setIsAlert={setIsAlert} />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Router>

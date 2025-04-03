@@ -1,9 +1,8 @@
 import Dropdown from "./Dropdown";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import Plot from "./Plot";
-import AddSensorForm from "./AddSensorForm";
+import { fetchLocations, fetchSensorData, fetchThresholds } from "../utils/fetch";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -12,63 +11,49 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
     const [selectedAcadBlock, setSelectedAcadBlock] = useState("");
     const [acadBlockTitle, setAcadBlockTitle] = useState("Academic Block");
     const [selectedRoom, setSelectedRoom] = useState("");
-    const [sensor_types, setSensorTypes] = useState<string[]>([]);
     const [sensorData, setSensorData] = useState<{ sensor_data: { timestamps: any[]; readings: any[] }; sensor_type: string }[]>([]);
-
-    const fetchLocations = async () => {
-        try {
-            const data = (await axios.get('http://localhost:5000/locations')).data
-            const grouped = data.reduce((acc: { [key: string]: number[] }, item: { building: string; room_number: number }) => {
-                const building = item.building;
-                if (!acc[building]) {
-                    acc[building] = [];
-                }
-                acc[building].push(item.room_number);
-                return acc;
-            }, {});
-
-            const sortedGrouped = Object.keys(grouped).sort().reduce((acc: { [key: string]: number[] }, key: string) => {
-                acc[key] = grouped[key].sort((a: number, b: number) => a - b);
-                return acc;
-            }, {});
-
-            setLocations(sortedGrouped);
-        } catch (error) {
-            console.error('Error fetching locations:', error);
-        }
-    };
-
-    const fetchSensorData = async (block: string, room: string) => {
-        try {
-            const sensor_data = (await axios.get(`http://localhost:5000/sensors/${block}/${room}/readings`)).data;
-            console.log("Sensor data:", sensor_data);
-            setSensorData(sensor_data);
-        } catch (error) {
-            console.error('Error fetching sensor data:', error);
-        }
-    };
-
-    const fetchSensorTypes = async () => {
-        try {
-            const sensor_types = (await axios.get(`http://localhost:5000/sensor_types/`)).data;
-            console.log("Sensor types:", sensor_types);
-            setSensorTypes(sensor_types.map((sensor: { sensor_type_name: string }) => sensor.sensor_type_name));
-        } catch (error) {
-            console.error('Error fetching sensor types:', error);
-        }
-    }
-
+    const [thresholds, setThresholds] = useState<{ [key: string]: { min: number; max: number } }>({});
+    const [chartData, setChartData] = useState<any[]>([]);
 
     useEffect(() => {
-        fetchLocations();
-        fetchSensorTypes();
+        fetchLocations(setLocations);
+        fetchThresholds(setThresholds);
     }, []);
+
+    const calChartdata = ({ selectedAcadBlock, selectedRoom }: { selectedAcadBlock: string, selectedRoom: string }) => {
+        fetchSensorData(selectedAcadBlock, selectedRoom, setSensorData);
+        const chartData = sensorData.slice().sort((a, b) => a.sensor_type.localeCompare(b.sensor_type)).map((data, index) => ({
+            labels: data.sensor_data.timestamps.slice().reverse(),
+            datasets: [
+                {
+                    label: data.sensor_type,
+                    data: data.sensor_data.readings.slice().reverse(),
+                    fill: false,
+                    borderColor: getBorderColor(index),
+                },
+            ],
+            thresholds: {
+                min: Number(thresholds[data.sensor_type]?.min),
+                max: Number(thresholds[data.sensor_type]?.max),
+            },
+        }));
+        setChartData(chartData);
+    }
 
     useEffect(() => {
         if (selectedAcadBlock && selectedRoom) {
-            fetchSensorData(selectedAcadBlock, selectedRoom);
+            calChartdata({ selectedAcadBlock, selectedRoom });
         }
     }, [selectedAcadBlock, selectedRoom]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (selectedAcadBlock && selectedRoom) {
+                calChartdata({ selectedAcadBlock, selectedRoom });
+            }
+        }, 2000);
+        return () => clearInterval(interval);
+    }, [sensorData]);
 
     const handleAcadBlockSelect = (item: string) => {
         setSelectedAcadBlock(item);
@@ -79,12 +64,7 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
 
     const handleRoomSelect = (item: string) => {
         setSelectedRoom(item);
-        console.log("Selected room:", item);
     };
-
-    const sortedSensorData = sensorData.slice().sort((a, b) =>
-        a.sensor_type.localeCompare(b.sensor_type)
-    );
 
     const getBorderColor = (index: number) => {
         const lightModeColors = ['#3B82F6', '#F59E0B', '#10B981', '#06B6D4', '#8B5CF6', '#FCD34D'];
@@ -92,21 +72,6 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
         const colors = mode === 'light' ? lightModeColors : darkModeColors;
         return colors[index % colors.length];
     };
-
-
-    const chartData = sortedSensorData.map((data, index) => ({
-        labels: data.sensor_data.timestamps,
-        datasets: [
-            {
-                label: data.sensor_type.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase()),
-                data: data.sensor_data.readings,
-                fill: false,
-                borderColor: getBorderColor(index),
-            },
-        ],
-        threshold: Math.floor(Math.random() * 11) + 40, // Random threshold between 40 and 50
-    }));
-
 
     return (
         <>
@@ -135,7 +100,6 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
                     <Plot chartData={chartData} mode={mode} />
                 )}
             </div>
-            <AddSensorForm id="exampleModal" label="exampleModalLabel" sensor_types={sensor_types} mode={mode} />
         </>
 
     );

@@ -8,11 +8,11 @@
 
 
 -- Insert sensor types
-INSERT INTO SensorTypes (sensor_type_name, unit,low_threshold, high_threshold) VALUES
-('temperature', '°C', 10,40),
-('humidity', '%', NULL,100),
-('light', 'lux', NULL,NULL),
-('air_quality', 'ppm', NULL,500);
+INSERT INTO SensorTypes (sensor_type_name, unit, low_threshold, high_threshold) VALUES
+('Temperature', '°C', 10, 35),
+('Humidity', '%', 20, 80),
+('Light', 'lux', 100, 1000),
+('Air Quality', 'ppm', 0, 400);
 
 -- -- Insert sample sensors
 -- INSERT INTO Sensors (sensor_type_id, location_id) VALUES
