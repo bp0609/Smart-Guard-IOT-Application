@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState, useEffect } from "react";
 
 export default function ({ id, label, sensor_types, mode }: { id: string, label: string, sensor_types: string[], mode: 'light' | 'dark' }) {
@@ -27,21 +28,22 @@ export default function ({ id, label, sensor_types, mode }: { id: string, label:
         const sensorType = (document.getElementById("sensorType") as HTMLSelectElement).value;
         const acadBlock = (document.getElementById("acadblock") as HTMLInputElement).value;
         const roomNumber = (document.getElementById("roomNumber") as HTMLInputElement).value;
-        const response = await fetch('http://localhost:5000/sensors', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
+        try {
+            const { data } = await axios.post('http://localhost:5000/sensors', {
                 sensor_type: sensorType,
                 building: acadBlock,
                 room_number: roomNumber,
                 status: 'active'
-            })
-        });
-        const data = await response.json();
-        setResponse(data);
-        console.log(data);
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            setResponse(data);
+        } catch (error) {
+            console.error(error);
+            setResponse({ error: 'Failed to add sensor. Please try again.' });
+        }
     }
 
     const clearForm = () => {

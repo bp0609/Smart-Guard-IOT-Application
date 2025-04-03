@@ -119,21 +119,17 @@ def create_location(server_url,num_location,num_rooms):
 
 def main():
     # Configuration
-    sensor_types = ["temperature", "humidity", "light", "air_quality"]
+    sensor_types = ["Temperature", "Humidity", "Light", "Air Quality"]
     duration = 15
     server_url = "http://localhost:5000"
     
-    buildings,rooms=create_location(server_url,3,3)
+    # buildings,rooms=create_location(server_url,3,3)
+    buildings = ["AB1", "AB2", "AB3"]
+    rooms = [101, 102, 103]
 
-    sensor_ids = []
-    sensor_type_index=[]
-    for i in range(len(buildings)):
-        for j,sensor_type in enumerate(sensor_types):
-            sensor_id = create_sensor(server_url,buildings[i],rooms[i],sensor_type)
-            if sensor_id is not None:
-                sensor_ids.append(sensor_id)
-                sensor_type_index.append(j)
-
+    sensor_ids = [i for i in range(1, 37)]
+    sensor_type_index = [((i-1) % 4) for i in range(1, 37)]
+    
     if not sensor_ids:
         print("No sensors were created successfully. Exiting.")
         return
