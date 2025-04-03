@@ -25,7 +25,7 @@ app.use('/locations', locationsRoute);
 app.use('/sensors', sensorsRoute);
 app.use('/sensors', sensorReadingsRoute);
 app.use('/alerts', alertsRoute);
-app.use('/sensor_types', sensorTypesRoute);
+app.use('/sensorTypes', sensorTypesRoute);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
