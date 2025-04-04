@@ -39,20 +39,16 @@ export const createSensorReading = async (req: Request, res: Response):Promise<a
        RETURNING *`,
       [sensorId, reading_value]
     );
-    console.log(reading_value);
     low_threshold = low_threshold === null ? null : parseFloat(low_threshold);
     high_threshold = high_threshold === null ? null : parseFloat(high_threshold);
     reading_value = parseFloat(reading_value);
-    console.log(typeof reading_value);
-    console.log(typeof low_threshold);
-    console.log(typeof high_threshold);
     if ((low_threshold && reading_value < low_threshold) || (high_threshold && reading_value > high_threshold)) {
-      // insert the reading into alert table
+      const alertType = (low_threshold && reading_value < low_threshold) ? 'low' : 'high';
       const alertResult = await pool.query(
-        `INSERT INTO Alerts (sensor_id, alert_time, reading_id)
-         VALUES ($1, NOW(), $2)
+        `INSERT INTO Alerts (sensor_id, alert_time, reading_id, alert_type)
+         VALUES ($1, NOW(), $2, $3)
          RETURNING *`,
-        [sensorId, result.rows[0].reading_id]
+        [sensorId, result.rows[0].reading_id, alertType]
       );
       if (alertResult.rowCount === 0) {
         return res.status(500).json({ error: 'Failed to create alert' });

@@ -26,7 +26,7 @@ export const getAlerts = async (req: Request, res: Response):Promise<any> => {
     // const sensorIds = result.rows.map((row: any) => row.sensor_id);
     const readingIds = result.rows.map((row: any) => row.reading_id);
     const detailedResult = await pool.query(
-      `SELECT s.sensor_id, l.building, l.room_number, st.sensor_type_name, a.alert_time, sr.reading_value
+      `SELECT s.sensor_id, l.building, l.room_number, st.sensor_type_name, a.alert_time, sr.reading_value, a.alert_type
        FROM SensorReadings sr
        JOIN Alerts a ON sr.reading_id = a.reading_id
        JOIN Sensors s ON sr.sensor_id = s.sensor_id
