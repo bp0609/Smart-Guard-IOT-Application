@@ -1,6 +1,6 @@
 // src/routes/alertRoutes.ts
 import { Router } from 'express';
-import { getAlerts,getAlertLogs, createAlert, updateAlert, deleteAlert } from '../controllers/alertController';
+import { getAlerts,getAlertLogs } from '../controllers/alertController';
 
 const router = Router();
 
