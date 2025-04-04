@@ -15,7 +15,7 @@ export const getSensorReadings = async (req: Request, res: Response):Promise<any
   }
 };
 
-export const createSensorReading = async (req: Request, res: Response):Promise<any> => {
+export const addSensorReading = async (req: Request, res: Response):Promise<any> => {
   const { sensorId } = req.params;
   let { reading_value } = req.body;
   try {
