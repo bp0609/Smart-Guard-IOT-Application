@@ -44,6 +44,7 @@ CREATE TABLE Alerts (
     alert_id SERIAL PRIMARY KEY,
     sensor_id INT NOT NULL,
     reading_id INT,                         -- Reference the reading that triggered the alert
+    alert_type VARCHAR(50),                 -- e.g., "Temperature High"
     alert_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     resolved BOOLEAN DEFAULT false,
     FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id),

@@ -17,7 +17,7 @@ export const getSensorReadings = async (req: Request, res: Response):Promise<any
 
 export const createSensorReading = async (req: Request, res: Response):Promise<any> => {
   const { sensorId } = req.params;
-  const { reading_value } = req.body;
+  let { reading_value } = req.body;
   try {
     const sensorTypeResult = await pool.query(
       `SELECT low_threshold, high_threshold
@@ -31,7 +31,7 @@ export const createSensorReading = async (req: Request, res: Response):Promise<a
       return res.status(404).json({ error: 'Sensor type not found' });
     }
 
-    const { low_threshold, high_threshold } = sensorTypeResult.rows[0];
+    let { low_threshold, high_threshold } = sensorTypeResult.rows[0];
     
     const result = await pool.query(
       `INSERT INTO SensorReadings (sensor_id, reading_value)
@@ -39,7 +39,13 @@ export const createSensorReading = async (req: Request, res: Response):Promise<a
        RETURNING *`,
       [sensorId, reading_value]
     );
-
+    console.log(reading_value);
+    low_threshold = low_threshold === null ? null : parseFloat(low_threshold);
+    high_threshold = high_threshold === null ? null : parseFloat(high_threshold);
+    reading_value = parseFloat(reading_value);
+    console.log(typeof reading_value);
+    console.log(typeof low_threshold);
+    console.log(typeof high_threshold);
     if ((low_threshold && reading_value < low_threshold) || (high_threshold && reading_value > high_threshold)) {
       // insert the reading into alert table
       const alertResult = await pool.query(

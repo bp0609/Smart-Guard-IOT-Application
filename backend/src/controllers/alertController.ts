@@ -21,12 +21,10 @@ export const getAlerts = async (req: Request, res: Response):Promise<any> => {
        ORDER BY sensor_id, alert_time DESC`
     );
     if (result.rowCount === 0) {
-      return res.status(404).json({ message: 'No unresolved alerts found' });
+      return res.status(200).json({ message: 'No alerts found' });
     }
-
-    const sensorIds = result.rows.map((row: any) => row.sensor_id);
+    // const sensorIds = result.rows.map((row: any) => row.sensor_id);
     const readingIds = result.rows.map((row: any) => row.reading_id);
-    console.log(sensorIds);
     const detailedResult = await pool.query(
       `SELECT s.sensor_id, l.building, l.room_number, st.sensor_type_name, a.alert_time, sr.reading_value
        FROM SensorReadings sr
