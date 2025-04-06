@@ -2,11 +2,11 @@
 import { Request, Response } from 'express';
 import pool from '../db';
 
-export const getSensorReadings = async (req: Request, res: Response):Promise<any> => {
+export const getSensorReadings = async (req: Request, res: Response): Promise<any> => {
   const { sensorId } = req.params;
   try {
     const result = await pool.query(
-      'SELECT * FROM SensorReadings WHERE sensor_id = $1 ORDER BY reading_time DESC',
+      'SELECT * FROM SensorReadings WHERE sensor_id = $1 ORDER BY reading_time DESC LIMIT 200',
       [sensorId]
     );
     res.status(200).json(result.rows);
@@ -95,14 +95,22 @@ export const getSensorReadingsByLocation = async (req: Request, res: Response):P
     const locationId = locationResult.rows[0].location_id;
 
     const result = await pool.query(
-      `SELECT s.sensor_id, st.sensor_type_name, sr.reading_time, sr.reading_value
-       FROM Sensors s
-       JOIN SensorReadings sr ON s.sensor_id = sr.sensor_id
-       JOIN SensorTypes st ON s.sensor_type_id = st.sensor_type_id
-       WHERE s.location_id = $1
-       ORDER BY sr.reading_time DESC`,
+      `SELECT sensor_id, sensor_type_name, reading_time, reading_value
+       FROM (
+         SELECT s.sensor_id,
+                st.sensor_type_name,
+                sr.reading_time,
+                sr.reading_value,
+                ROW_NUMBER() OVER (PARTITION BY s.sensor_id ORDER BY sr.reading_time DESC) as row_num
+         FROM Sensors s
+         JOIN SensorReadings sr ON s.sensor_id = sr.sensor_id
+         JOIN SensorTypes st ON s.sensor_type_id = st.sensor_type_id
+         WHERE s.location_id = $1
+       ) ranked
+       WHERE row_num <= 200`,
       [locationId]
     );
+    
 
     const formattedResult: any[] = [];
 

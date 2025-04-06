@@ -58,8 +58,6 @@ def send_readings(sensor_id, duration, server_url, sensor_type_index):
                 print(f"Sensor {sensor_id}: Failed to send reading, status {response.status_code}")
         except Exception as e:
             print(f"Sensor {sensor_id}: Error sending reading: {e}")
-        
-        time.sleep(3)
 
 def create_sensor(server_url,building, room_number, sensor_type):
     installation_date = datetime.now().strftime('%Y-%m-%d')  # Current date in YYYY-MM-DD
@@ -120,8 +118,8 @@ def create_location(server_url,num_location,num_rooms):
 def main():
     # Configuration
     sensor_types = ["Temperature", "Humidity", "Light", "Air Quality"]
-    duration = 15
-    server_url = "http://localhost:5000"
+    duration = 60
+    server_url = "http://10.7.14.58:5000"
     
     # buildings,rooms=create_location(server_url,3,3)
     buildings = ["AB1", "AB2", "AB3"]
