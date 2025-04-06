@@ -1,8 +1,7 @@
 import axios from "axios";
 
-
-const IP = "10.7.14.58";
-const PORT = "5000";
+const IP = import.meta.env.VITE_IP || "localhost";
+const PORT = import.meta.env.VITE_PORT || "5000";
 const BASE_URL = `http://${IP}:${PORT}`;
 
 
