@@ -75,45 +75,63 @@ export const addSensorReading = async (req: Request, res: Response):Promise<any>
 };
 
 export const getSensorReadingsByLocation = async (req: Request, res: Response):Promise<any> => {
-  const { building, room_number } = req.params;
-  const {start_time, end_time} = req.body;
-  console.log(req.body);
+  const { building, room_number,start_time, end_time } = req.params;
   console.log("Start time: ", start_time);
   console.log("End time: ", end_time);
   try {
     const locationResult = await pool.query(
       `SELECT location_id
-       FROM Locations
-       WHERE building = $1 AND room_number = $2`,
+      FROM Locations
+      WHERE building = $1 AND room_number = $2`,
       [building, room_number]
     );
-
+    
     if (locationResult.rows.length === 0) {
       return res.status(404).json({ error: 'Location not found' });
     }
-
+    
     const locationId = locationResult.rows[0].location_id;
-
-    const result = await pool.query(
-      `SELECT sensor_id, sensor_type_name, reading_time, reading_value
-       FROM (
-         SELECT s.sensor_id,
-                st.sensor_type_name,
-                sr.reading_time,
-                sr.reading_value,
-                ROW_NUMBER() OVER (PARTITION BY s.sensor_id ORDER BY sr.reading_time DESC) as row_num
-         FROM Sensors s
-         JOIN SensorReadings sr ON s.sensor_id = sr.sensor_id
-         JOIN SensorTypes st ON s.sensor_type_id = st.sensor_type_id
-         WHERE s.location_id = $1
-       ) ranked
-       WHERE row_num <= 100`,
-      [locationId]
-    );
+    var result: any;
+    if(start_time=="_" || end_time=="_"){
+      result = await pool.query(
+        `SELECT sensor_id, sensor_type_name, reading_time, reading_value
+         FROM (
+           SELECT s.sensor_id,
+                  st.sensor_type_name,
+                  sr.reading_time,
+                  sr.reading_value,
+                  ROW_NUMBER() OVER (PARTITION BY s.sensor_id ORDER BY sr.reading_time DESC) as row_num
+           FROM Sensors s
+           JOIN SensorReadings sr ON s.sensor_id = sr.sensor_id
+           JOIN SensorTypes st ON s.sensor_type_id = st.sensor_type_id
+           WHERE s.location_id = $1
+         ) ranked
+         WHERE row_num <= 100`,
+        [locationId]
+      ); 
+    }
+    else{
+      result = await pool.query(
+        `SELECT sensor_id, sensor_type_name, reading_time, reading_value
+         FROM (
+           SELECT s.sensor_id,
+          st.sensor_type_name,
+          sr.reading_time,
+          sr.reading_value,
+          ROW_NUMBER() OVER (PARTITION BY s.sensor_id ORDER BY sr.reading_time DESC) as row_num
+           FROM Sensors s
+           JOIN SensorReadings sr ON s.sensor_id = sr.sensor_id
+           JOIN SensorTypes st ON s.sensor_type_id = st.sensor_type_id
+           WHERE s.location_id = $1 AND sr.reading_time BETWEEN $2 AND $3
+         ) ranked
+         WHERE row_num <= 100`,
+        [locationId, `${start_time} 00:00:00`, `${end_time} 23:59:59`]
+      );
+    }
     
     const formattedResult: any[] = [];
 
-    result.rows.forEach(row => {
+    result.rows.forEach((row: { sensor_id: string; sensor_type_name: string; reading_time: string; reading_value: number }) => {
       const formattedTime = new Date(row.reading_time).toLocaleString('en-GB', {
       day: '2-digit',
       month: '2-digit',
