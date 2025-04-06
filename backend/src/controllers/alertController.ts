@@ -10,7 +10,7 @@ export const getAlertLogs = async (req: Request, res: Response):Promise<any> => 
        ORDER BY sensor_id, alert_time DESC`
     );
     if (result.rowCount === 0) {
-      return res.status(200).json({ message: 'No alerts found' });
+      return res.status(200).json([]);
     }
     // const sensorIds = result.rows.map((row: any) => row.sensor_id);
     const readingIds = result.rows.map((row: any) => row.reading_id);
