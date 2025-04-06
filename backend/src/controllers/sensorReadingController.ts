@@ -107,7 +107,7 @@ export const getSensorReadingsByLocation = async (req: Request, res: Response):P
          JOIN SensorTypes st ON s.sensor_type_id = st.sensor_type_id
          WHERE s.location_id = $1
        ) ranked
-       WHERE row_num <= 200`,
+       WHERE row_num <= 100`,
       [locationId]
     );
     
