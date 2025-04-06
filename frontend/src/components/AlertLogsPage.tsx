@@ -58,7 +58,23 @@ export default function AlertLogsPage({ mode }: { mode: 'light' | 'dark' }) {
                         >
                             Previous
                         </button>
-                        <span>Page {currentPage} of {totalPages}</span>
+                        <div className="d-flex align-items-center">
+                            <span>Page </span>
+                            <input
+                                type="number"
+                                className="form-control mx-2"
+                                style={{ width: '100px', textAlign: 'center' }}
+                                value={currentPage}
+                                min={1}
+                                max={totalPages}
+
+                                onChange={(e) => {
+                                    const page = Math.max(1, Math.min(totalPages, Number(e.target.value)));
+                                    setCurrentPage(page);
+                                }}
+                            />
+                            <span> of {totalPages}</span>
+                        </div>
                         <button
                             onClick={handleNextPage}
                             className="btn btn-secondary ms-2"

@@ -69,7 +69,6 @@ export const fetchSensorData = async (
         const sortedSensorData = sensor_data.sort((a: any, b: any) =>
             a.sensor_type.localeCompare(b.sensor_type)
         );
-
         setSensorData(sortedSensorData);
     } catch (error) {
         console.error('Error fetching sensor data:', error);
