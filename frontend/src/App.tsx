@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import PageNotFound from './components/PageNotFound';
 import AlertsPage from './components/Alertspage';
+import AlertLogsPage from './components/AlertLogsPage';
 import AddSensorForm from './components/AddSensorForm';
 import { fetchIsAlert, fetchSensorTypes } from './utils/fetch';
 
@@ -44,6 +45,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard mode={mode} />} />
           <Route path="/alerts" element={<AlertsPage mode={mode} />} />
+          <Route path="/alertlogs" element={<AlertLogsPage mode={mode} />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Router>

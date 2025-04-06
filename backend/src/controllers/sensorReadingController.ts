@@ -66,7 +66,6 @@ export const addSensorReading = async (req: Request, res: Response):Promise<any>
          WHERE sensor_id = $1 AND resolved = false`,
         [sensorId]
       );
-      console.log(alertResult.rowCount);
     }
     res.status(201).json(result.rows[0]);
   } catch (error: any) {
@@ -112,20 +111,12 @@ export const getSensorReadingsByLocation = async (req: Request, res: Response):P
     }
     else{
       result = await pool.query(
-        `SELECT sensor_id, sensor_type_name, reading_time, reading_value
-         FROM (
-           SELECT s.sensor_id,
-          st.sensor_type_name,
-          sr.reading_time,
-          sr.reading_value,
-          ROW_NUMBER() OVER (PARTITION BY s.sensor_id ORDER BY sr.reading_time DESC) as row_num
+        `SELECT s.sensor_id, sensor_type_name, reading_time, reading_value
            FROM Sensors s
            JOIN SensorReadings sr ON s.sensor_id = sr.sensor_id
            JOIN SensorTypes st ON s.sensor_type_id = st.sensor_type_id
-           WHERE s.location_id = $1 AND sr.reading_time BETWEEN $2 AND $3
-         ) ranked
-         WHERE row_num <= 100`,
-        [locationId, `${start_time} 00:00:00`, `${end_time} 23:59:59`]
+           WHERE s.location_id = $1 AND sr.reading_time BETWEEN $2 AND $3`,
+        [locationId, `${start_time} 00:00:00.0`, `${end_time} 23:59:59.999999`]
       );
     }
     
