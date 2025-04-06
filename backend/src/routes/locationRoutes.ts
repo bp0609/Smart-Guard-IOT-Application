@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get('/', getLocations);                   // GET /locations
 router.post('/', createLocation);                // POST /locations
-router.put('/:id', updateLocation);              // PUT /locations/:id
-router.delete('/:id', deleteLocation);           // DELETE /locations/:id
+router.put('/:locationID', updateLocation);              // PUT /locations/:id
+router.delete('/:locationID', deleteLocation);           // DELETE /locations/:id
 
 export default router;
