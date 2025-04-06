@@ -14,7 +14,7 @@ CREATE TABLE SensorTypes (
     unit VARCHAR(20),                       -- e.g., °C, %, lux, ppm
     low_threshold DECIMAL(10,2),               
     high_threshold DECIMAL(10,2),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(sensor_type_name)
 );
 

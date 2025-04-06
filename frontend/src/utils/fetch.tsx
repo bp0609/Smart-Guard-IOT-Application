@@ -4,7 +4,6 @@ const IP = import.meta.env.VITE_IP || "localhost";
 const PORT = import.meta.env.VITE_PORT || "5000";
 const BASE_URL = `http://${IP}:${PORT}`;
 
-
 export const fetchSensorTypes = async (setSensorTypes: React.Dispatch<React.SetStateAction<string[]>>) => {
     try {
         const sensor_types = (await axios.get(`${BASE_URL}/sensor_types/`)).data;
@@ -32,7 +31,7 @@ export const fetchThresholds = async (setThresholds: React.Dispatch<React.SetSta
 
 export const fetchLocations = async (setLocations: React.Dispatch<React.SetStateAction<{ [key: string]: number[] }>>) => {
     try {
-        const data = (await axios.get(`${BASE_URL}/locations`)).data;
+        const data = (await axios.get(`${BASE_URL}/locations`)).data
         const grouped = data.reduce((acc: { [key: string]: number[] }, item: { building: string; room_number: number }) => {
             const building = item.building;
             if (!acc[building]) {
