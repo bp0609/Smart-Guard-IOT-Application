@@ -4,8 +4,27 @@ import pool from '../db';
 
 export const getAlertLogs = async (req: Request, res: Response):Promise<any> => {
   try {
-    const result = await pool.query('SELECT * FROM Alerts');
-    res.status(200).json(result.rows);
+    const result = await pool.query(
+      `SELECT DISTINCT ON (sensor_id) sensor_id, reading_id,alert_time
+       FROM Alerts
+       ORDER BY sensor_id, alert_time DESC`
+    );
+    if (result.rowCount === 0) {
+      return res.status(200).json({ message: 'No alerts found' });
+    }
+    // const sensorIds = result.rows.map((row: any) => row.sensor_id);
+    const readingIds = result.rows.map((row: any) => row.reading_id);
+    const detailedResult = await pool.query(
+      `SELECT s.sensor_id, l.building, l.room_number, st.sensor_type_name, a.alert_time, sr.reading_value, a.alert_type
+       FROM SensorReadings sr
+       JOIN Alerts a ON sr.reading_id = a.reading_id
+       JOIN Sensors s ON sr.sensor_id = s.sensor_id
+       JOIN locations l ON s.location_id = l.location_id
+       JOIN SensorTypes st ON s.sensor_type_id = st.sensor_type_id
+       ORDER BY a.alert_time DESC`
+    );
+
+    res.status(200).json(detailedResult.rows);
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to fetch alerts', message: error.message });
   }
