@@ -2,30 +2,24 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchAlerts } from "../utils/fetch";
 
-export default function AlertsPage({ mode, setIsAlert }: { mode: 'light' | 'dark', setIsAlert: React.Dispatch<React.SetStateAction<boolean>> }) {
+export default function AlertsPage({ mode }: { mode: 'light' | 'dark' }) {
     const [alertData, setAlertData] = useState<{
         alert_time: string;
         building: string;
         reading_value: string;
         room_number: number;
         sensor_id: number;
+        alert_type: string;
         sensor_type_name: string;
     }[]>([]);
 
     useEffect(() => {
+        fetchAlerts(setAlertData);
         const interval = setInterval(() => {
             fetchAlerts(setAlertData);
         }, 2000);
         return () => clearInterval(interval);
     }, []);
-
-    useEffect(() => {
-        if (alertData.length > 0) {
-            setIsAlert(true);
-        } else {
-            setIsAlert(false);
-        }
-    }, [alertData]);
 
     return (
         <div className="container my-3 text-center">
@@ -51,7 +45,7 @@ export default function AlertsPage({ mode, setIsAlert }: { mode: 'light' | 'dark
                                     <td>{alert.room_number}</td>
                                     <td>{alert.sensor_id}</td>
                                     <td>{alert.sensor_type_name}</td>
-                                    <td>{alert.reading_value}</td>
+                                    <td>{alert.reading_value} {alert.alert_type === 'high' ? '(High)' : '(Low)'}</td>
                                 </tr>
                             ))}
                         </tbody>

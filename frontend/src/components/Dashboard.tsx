@@ -11,7 +11,7 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
     const [selectedAcadBlock, setSelectedAcadBlock] = useState("");
     const [acadBlockTitle, setAcadBlockTitle] = useState("Academic Block");
     const [selectedRoom, setSelectedRoom] = useState("");
-    const [sensorData, setSensorData] = useState<{ sensor_data: { timestamps: any[]; readings: any[] }; sensor_type: string }[]>([]);
+    const [sensorData, setSensorData] = useState<{ sensor_data: { timestamps: any[]; readings: any[] }; sensor_type: string; unit: string }[]>([]);
     const [thresholds, setThresholds] = useState<{ [key: string]: { min: number; max: number } }>({});
     const [chartData, setChartData] = useState<any[]>([]);
 
@@ -27,6 +27,7 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
             datasets: [
                 {
                     label: data.sensor_type,
+                    unit: data.unit,
                     data: data.sensor_data.readings.slice().reverse(),
                     fill: false,
                     borderColor: getBorderColor(index),
@@ -41,12 +42,7 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
     }
 
     useEffect(() => {
-        if (selectedAcadBlock && selectedRoom) {
-            calChartdata({ selectedAcadBlock, selectedRoom });
-        }
-    }, [selectedAcadBlock, selectedRoom]);
-
-    useEffect(() => {
+        // calChartdata({ selectedAcadBlock, selectedRoom });
         const interval = setInterval(() => {
             if (selectedAcadBlock && selectedRoom) {
                 calChartdata({ selectedAcadBlock, selectedRoom });
@@ -54,6 +50,13 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
         }, 2000);
         return () => clearInterval(interval);
     }, [sensorData]);
+
+    useEffect(() => {
+        if (selectedAcadBlock && selectedRoom) {
+            calChartdata({ selectedAcadBlock, selectedRoom });
+        }
+    }, [selectedAcadBlock, selectedRoom]);
+
 
     const handleAcadBlockSelect = (item: string) => {
         setSelectedAcadBlock(item);

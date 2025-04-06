@@ -1,8 +1,14 @@
 import axios from "axios";
 
+
+const IP = "10.7.14.58";
+const PORT = "5000";
+const BASE_URL = `http://${IP}:${PORT}`;
+
+
 export const fetchSensorTypes = async (setSensorTypes: React.Dispatch<React.SetStateAction<string[]>>) => {
     try {
-        const sensor_types = (await axios.get(`http://localhost:5000/sensor_types/`)).data;
+        const sensor_types = (await axios.get(`${BASE_URL}/sensor_types/`)).data;
         setSensorTypes(sensor_types.map((sensor: { sensor_type_name: string }) => sensor.sensor_type_name));
     } catch (error) {
         console.error('Error fetching sensor types:', error);
@@ -11,7 +17,7 @@ export const fetchSensorTypes = async (setSensorTypes: React.Dispatch<React.SetS
 
 export const fetchThresholds = async (setThresholds: React.Dispatch<React.SetStateAction<{ [key: string]: { min: number; max: number } }>>) => {
     try {
-        const data = (await axios.get(`http://localhost:5000/sensor_types/`)).data;
+        const data = (await axios.get(`${BASE_URL}/sensor_types/`)).data;
         const thresholds = data.reduce((acc: { [key: string]: { min: number; max: number } }, sensor: { sensor_type_name: string; low_threshold: number; high_threshold: number }) => {
             acc[sensor.sensor_type_name] = {
                 min: sensor.low_threshold,
@@ -27,7 +33,7 @@ export const fetchThresholds = async (setThresholds: React.Dispatch<React.SetSta
 
 export const fetchLocations = async (setLocations: React.Dispatch<React.SetStateAction<{ [key: string]: number[] }>>) => {
     try {
-        const data = (await axios.get('http://localhost:5000/locations')).data
+        const data = (await axios.get(`${BASE_URL}/locations`)).data;
         const grouped = data.reduce((acc: { [key: string]: number[] }, item: { building: string; room_number: number }) => {
             const building = item.building;
             if (!acc[building]) {
@@ -48,19 +54,35 @@ export const fetchLocations = async (setLocations: React.Dispatch<React.SetState
     }
 };
 
-export const fetchSensorData = async (block: string, room: string, setSensorData: React.Dispatch<React.SetStateAction<{ sensor_data: { timestamps: any[]; readings: any[] }; sensor_type: string }[]>>) => {
+export const fetchSensorData = async (block: string, room: string, setSensorData: React.Dispatch<React.SetStateAction<{ sensor_data: { timestamps: any[]; readings: any[] }; sensor_type: string; unit: string }[]>>) => {
     try {
-        const sensor_data = (await axios.get(`http://localhost:5000/sensors/${block}/${room}/readings`)).data;
-        setSensorData(sensor_data);
+        const sensor_data = (await axios.get(`${BASE_URL}/sensors/${block}/${room}/readings`)).data;
+        const sensor_types = (await axios.get(`${BASE_URL}/sensor_types/`)).data;
+        const sensor_data_with_types = sensor_data.map((data: { timestamps: any[]; readings: any[] }, index: number) => ({
+            ...data,
+            sensor_type: sensor_types[index].sensor_type_name,
+            unit: sensor_types[index].unit
+        }));
+        const sortedSensorData = sensor_data_with_types.sort((a: any, b: any) => a.sensor_type.localeCompare(b.sensor_type));
+        setSensorData(sortedSensorData);
     } catch (error) {
         console.error('Error fetching sensor data:', error);
     }
 };
 
-export const fetchAlerts = async (setAlertData: React.Dispatch<React.SetStateAction<{ alert_time: string; building: string; reading_value: string; room_number: number; sensor_id: number; sensor_type_name: string }[]>>) => {
+export const fetchAlerts = async (setAlertData: React.Dispatch<React.SetStateAction<{ alert_time: string; building: string; reading_value: string; room_number: number; sensor_id: number; alert_type: string; sensor_type_name: string }[]>>) => {
     try {
-        const data = (await axios.get('http://localhost:5000/alerts')).data;
+        const data = (await axios.get(`${BASE_URL}/alerts`)).data;
         setAlertData(data);
+    } catch (error) {
+        console.error('Error fetching alerts:', error);
+    }
+};
+
+export const fetchIsAlert = async (setIsAlert: React.Dispatch<React.SetStateAction<boolean>>) => {
+    try {
+        const data = (await axios.get(`${BASE_URL}/alerts`)).data;
+        setIsAlert(data.length > 0);
     } catch (error) {
         console.error('Error fetching alerts:', error);
     }
