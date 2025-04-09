@@ -24,7 +24,7 @@ export default function Plot({ chartData, mode }: { chartData: any[]; mode: 'lig
         <div className="container-fluid">
             <div className="row">
                 {chartData.map((data, index) => {
-                    const latestValue = data.datasets[0].latestValue;
+                    const latestValue = Number(data.datasets[0].latestValue);
                     const isDanger = latestValue < data.thresholds.min || latestValue > data.thresholds.max;
                     const options = {
                         responsive: true,
