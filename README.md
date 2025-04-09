@@ -35,7 +35,7 @@ Before starting, ensure you have the following installed on your machine:
    │   │   │   ├── Dropdown.tsx           
    │   │   │   ├── Navbar.tsx          
    │   │   │   ├── PageNotFound.tsx          
-   │   │   │   ├── Plot.tsx            
+   │   │   │   └── Plot.tsx            
    │   │   ├── App.tsx                # (Main React component)
    │   │   └── main.tsx              # (Entry point for React)
    │   ├── package.json
@@ -118,7 +118,7 @@ Before starting, ensure you have the following installed on your machine:
    make start-backend
    ```
 
-3. Or alternatively you can run both using 
+3. Or alternatively you can run both using
 
    ```bash
    make dev
