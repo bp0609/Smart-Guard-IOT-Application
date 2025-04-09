@@ -3,14 +3,13 @@ import { useEffect, useState } from "react";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import Plot from "./Plot";
 import { fetchLocations, fetchSensorData, fetchThresholds } from "../utils/fetch";
+import { useSelection } from "../context/SelectionContext";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
     const [locations, setLocations] = useState<{ [key: string]: number[] }>({});
-    const [selectedAcadBlock, setSelectedAcadBlock] = useState("");
-    const [selectedRoom, setSelectedRoom] = useState("");
-    const [sensorData, setSensorData] = useState<{ sensor_data: { timestamps: any[]; readings: any[] }; sensor_type: string; unit: string; latest_value: string }[]>([]);
+    const { selectedAcadBlock, setSelectedAcadBlock, selectedRoom, setSelectedRoom } = useSelection();
     const [thresholds, setThresholds] = useState<{ [key: string]: { min: number; max: number } }>({});
     const [chartData, setChartData] = useState<any[]>([]);
     const [startDate, setStartDate] = useState("_");
@@ -21,9 +20,9 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
         fetchThresholds(setThresholds);
     }, []);
 
-    const calChartdata = ({ selectedAcadBlock, selectedRoom, startDate, endDate }: { selectedAcadBlock: string, selectedRoom: string, startDate: string, endDate: string }) => {
-        fetchSensorData(selectedAcadBlock, selectedRoom, startDate, endDate, setSensorData);
-        const chartData = sensorData.slice().sort((a, b) => a.sensor_type.localeCompare(b.sensor_type)).map((data, index) => ({
+    const calChartdata = async ({ selectedAcadBlock, selectedRoom, startDate, endDate }: { selectedAcadBlock: string, selectedRoom: string, startDate: string, endDate: string }) => {
+        const data = (await fetchSensorData(selectedAcadBlock, selectedRoom, startDate, endDate));
+        const chartData = data.slice().sort((a: any, b: any) => a.sensor_type.localeCompare(b.sensor_type)).map((data: any, index: number) => ({
             labels: data.sensor_data.timestamps.slice().reverse(),
             datasets: [
                 {
@@ -46,26 +45,36 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
     }
 
     useEffect(() => {
-        // calChartdata({ selectedAcadBlock, selectedRoom });
+        if (selectedAcadBlock && selectedRoom) {
+            calChartdata({ selectedAcadBlock, selectedRoom, startDate, endDate });
+        }
         const interval = setInterval(() => {
             if (selectedAcadBlock && selectedRoom) {
                 calChartdata({ selectedAcadBlock, selectedRoom, startDate, endDate });
             }
         }, 2000);
         return () => clearInterval(interval);
-    }, [sensorData]);
+    }, [selectedAcadBlock, selectedRoom, startDate, endDate, mode]);
+
 
     useEffect(() => {
-        if (selectedAcadBlock && selectedRoom) {
-            calChartdata({ selectedAcadBlock, selectedRoom, startDate, endDate });
-        }
-    }, [selectedAcadBlock, selectedRoom]);
+        const storedBlock = localStorage.getItem('selectedAcadBlock');
+        const storedRoom = localStorage.getItem('selectedRoom');
+        if (storedBlock) setSelectedAcadBlock(storedBlock);
+        if (storedRoom) setSelectedRoom(storedRoom);
+    }, []);
 
+    useEffect(() => {
+        localStorage.setItem('selectedAcadBlock', selectedAcadBlock);
+    }, [selectedAcadBlock]);
+
+    useEffect(() => {
+        localStorage.setItem('selectedRoom', selectedRoom);
+    }, [selectedRoom]);
 
     const handleAcadBlockSelect = (item: string) => {
         setSelectedAcadBlock(item);
         setSelectedRoom("");
-        setSensorData([]);
     };
 
     const handleRoomSelect = (item: string) => {
@@ -77,18 +86,26 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
         const value = e.target.value;
         if (value && (!endDate || value <= endDate)) {
             setStartDate(value);
+            if (endDate !== "_") {
+                calChartdata({ selectedAcadBlock, selectedRoom, startDate: value, endDate });
+            }
         } else {
             e.target.value = "";
             setStartDate("_");
+            calChartdata({ selectedAcadBlock, selectedRoom, startDate: "_", endDate: "_" });
         }
     };
     const handleEndDate = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         if (value && (!startDate || value >= startDate)) {
             setEndDate(value);
+            if (startDate !== "_") {
+                calChartdata({ selectedAcadBlock, selectedRoom, startDate, endDate: value });
+            }
         } else {
             e.target.value = "";
             setEndDate("_");
+            calChartdata({ selectedAcadBlock, selectedRoom, startDate: "_", endDate: "_" });
         }
     }
 
@@ -122,7 +139,12 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
                     <div className="col-12 col-md-auto">
                         <Dropdown
                             title={selectedRoom || "Room Number"}
-                            items={selectedAcadBlock ? locations[selectedAcadBlock].map(String).sort() : []}
+                            items={
+                                selectedAcadBlock && locations[selectedAcadBlock]
+                                    ? locations[selectedAcadBlock].map(String).sort()
+                                    : []
+                            }
+
                             onSelect={handleRoomSelect}
                             disabled={!selectedAcadBlock}
                             disable_msg="Select an academic block first"
@@ -130,6 +152,11 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
                         />
                     </div>
                 </div>
+                {/* {selectedAcadBlock && selectedRoom && sensorData.length === 0 && (
+                    <div className="alert alert-info mt-3" role="alert">
+                        No sensor data available for the selcted Academic block and Room combination for the selected date range.
+                    </div>
+                )} */}
                 {selectedAcadBlock && selectedRoom && (
                     <>
                         <Plot chartData={chartData} mode={mode} />
@@ -159,6 +186,5 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
                 )}
             </div>
         </>
-
     );
 }

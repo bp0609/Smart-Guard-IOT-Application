@@ -56,20 +56,23 @@ export const fetchSensorData = async (
     block: string,
     room: string,
     startDate: string,
-    endDate: string,
-    setSensorData: React.Dispatch<React.SetStateAction<{
-        sensor_data: { timestamps: any[]; readings: any[] };
-        sensor_type: string;
-        unit: string;
-        latest_value: string;
-    }[]>>
+    endDate: string
 ) => {
     try {
-        const sensor_data = (await axios.get(`${BASE_URL}/sensors/${block}/${room}/${startDate}/${endDate}/readings`)).data;
+        const sensor_data = (await axios.get(`${BASE_URL}/sensors/${block}/${room}/${startDate}/${endDate}/readings`)).data
         const sortedSensorData = sensor_data.sort((a: any, b: any) =>
             a.sensor_type.localeCompare(b.sensor_type)
         );
-        setSensorData(sortedSensorData);
+
+        return sortedSensorData.map((data: any) => ({
+            sensor_data: {
+                timestamps: data.sensor_data.timestamps,
+                readings: data.sensor_data.readings,
+            },
+            sensor_type: data.sensor_type,
+            unit: data.unit,
+            latest_value: data.latest_value,
+        }));
     } catch (error) {
         console.error('Error fetching sensor data:', error);
     }

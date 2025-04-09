@@ -17,7 +17,7 @@ Before starting, ensure you have the following installed on your machine:
    IoT-project/
    ├── backend/
    │   ├── controllers/
-   │   │   └── sensorController.js   # (Handles sensor data logic)
+   │   │   └── sensorController.ts   # (Handles sensor data logic)
    │   ├── routes/
    │   │   └── sensors.js            # (Defines API endpoints)
    │   ├── .env                      # (Environment variables, e.g., DB credentials)
@@ -28,8 +28,16 @@ Before starting, ensure you have the following installed on your machine:
    │   ├── public/
    │   ├── src/
    │   │   ├── components/           # (React components)
-   │   │   ├── App.js                # (Main React component)
-   │   │   └── index.js              # (Entry point for React)
+   │   │   │   ├── AddSensorForm.tsx            
+   │   │   │   ├── AlertLogsPage.tsx            
+   │   │   │   ├── AlertsPage.tsx            
+   │   │   │   ├── Dashboard.tsx          
+   │   │   │   ├── Dropdown.tsx           
+   │   │   │   ├── Navbar.tsx          
+   │   │   │   ├── PageNotFound.tsx          
+   │   │   │   ├── Plot.tsx            
+   │   │   ├── App.tsx                # (Main React component)
+   │   │   └── main.tsx              # (Entry point for React)
    │   ├── package.json
    │   └── README.md
    └── README.md
