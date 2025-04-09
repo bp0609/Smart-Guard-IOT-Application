@@ -152,11 +152,11 @@ export default function Dashboard({ mode }: { mode: 'light' | 'dark' }) {
                         />
                     </div>
                 </div>
-                {/* {selectedAcadBlock && selectedRoom && sensorData.length === 0 && (
+                {selectedAcadBlock && selectedRoom && chartData.length === 0 && (
                     <div className="alert alert-info mt-3" role="alert">
                         No sensor data available for the selcted Academic block and Room combination for the selected date range.
                     </div>
-                )} */}
+                )}
                 {selectedAcadBlock && selectedRoom && (
                     <>
                         <Plot chartData={chartData} mode={mode} />
