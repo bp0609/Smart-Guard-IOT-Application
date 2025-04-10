@@ -37,6 +37,11 @@ export const createSensor = async (req: Request, res: Response): Promise<any> =>
       return res.status(400).json({ error: 'Sensor type not found', message: 'Invalid sensor_type' });
     }
     const sensor_type_id = sensorTypeResult.rows[0].sensor_type_id;
+    // check if sensor already exists
+    const existingSensor = await pool.query('SELECT * FROM Sensors WHERE sensor_type_id = $1 AND location_id = $2', [sensor_type_id, location_id]);
+    if (existingSensor.rowCount && existingSensor.rowCount > 0) {
+      return res.status(400).json({ error: 'Sensor already exists', message: 'Sensor already exists' });
+    }
     const result = await pool.query(
       `INSERT INTO Sensors (sensor_type_id, location_id, installation_date, status)
        VALUES ($1, $2, $3, $4)
