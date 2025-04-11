@@ -50,3 +50,11 @@ CREATE TABLE Alerts (
     FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id),
     FOREIGN KEY (reading_id) REFERENCES SensorReadings(reading_id)
 );
+
+-- 6. Admin Table: Stores admin information.
+CREATE TABLE Admins (
+    admin_id SERIAL PRIMARY KEY,
+    admin_name VARCHAR(100) NOT NULL,
+    email_id VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

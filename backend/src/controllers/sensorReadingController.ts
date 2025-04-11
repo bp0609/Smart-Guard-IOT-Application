@@ -1,5 +1,8 @@
+import dotenv from 'dotenv';
+dotenv.config();
 // src/controllers/sensorReadingController.ts
 import { Request, Response } from 'express';
+var nodemailer = require('nodemailer');
 import pool from '../db';
 
 export const getSensorReadings = async (req: Request, res: Response): Promise<any> => {
@@ -14,6 +17,34 @@ export const getSensorReadings = async (req: Request, res: Response): Promise<an
     res.status(500).json({ error: 'Failed to fetch sensor readings', message: error.message });
   }
 };
+
+var transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'cnprojectsmartguard@gmail.com',
+    pass: process.env.APP_PASS
+  }
+});
+
+var mailOptions = {
+  from: 'cnprojectsmartguard@gmail.com',
+  to: 'patelbhavik03.bp@gmail.com',
+  subject: 'Sending Email using Node.js',
+  text: 'That was easy!'
+};
+
+interface MailOptions {
+  from: string;
+  to: string;
+  subject: string;
+  text: string;
+}
+
+interface Transporter {
+  sendMail: (mailOptions: MailOptions, callback: (error: Error | null, info: { response: string }) => void) => void;
+}
+
+const typedTransporter: Transporter = transporter;
 
 export const addSensorReading = async (req: Request, res: Response):Promise<any> => {
   const { sensorId } = req.params;
@@ -42,8 +73,9 @@ export const addSensorReading = async (req: Request, res: Response):Promise<any>
     low_threshold = low_threshold === null ? null : parseFloat(low_threshold);
     high_threshold = high_threshold === null ? null : parseFloat(high_threshold);
     reading_value = parseFloat(reading_value);
+    let alertType="Unknown";
     if ((low_threshold && reading_value < low_threshold) || (high_threshold && reading_value > high_threshold)) {
-      const alertType = (low_threshold && reading_value < low_threshold) ? 'low' : 'high';
+      alertType = (low_threshold && reading_value < low_threshold) ? 'low' : 'high';
       const alertResult = await pool.query(
         `INSERT INTO Alerts (sensor_id, alert_time, reading_id, alert_type)
          VALUES ($1, NOW(), $2, $3)
@@ -55,6 +87,57 @@ export const addSensorReading = async (req: Request, res: Response):Promise<any>
       }
       // Notify the user about the alert
       // You can use a notification service or send an email here
+      const locationDetails = await pool.query(
+        `SELECT building, room_number
+         FROM Locations
+         WHERE location_id = (
+           SELECT location_id
+           FROM Sensors
+           WHERE sensor_id = $1
+         )`,
+        [sensorId]
+      );
+      const sensorTypeNameResult = await pool.query(
+        `SELECT st.sensor_type_name, st.unit
+         FROM SensorTypes st
+         JOIN Sensors s ON st.sensor_type_id = s.sensor_type_id
+         WHERE s.sensor_id = $1`,
+        [sensorId]
+      );
+
+      let sensorTypeName = "Unknown";
+      let sensorUnit = "Unknown";
+      if (sensorTypeNameResult.rows.length > 0) {
+        sensorTypeName = sensorTypeNameResult.rows[0].sensor_type_name;
+        sensorUnit = sensorTypeNameResult.rows[0].unit;
+      }
+      const adminEmailsResult = await pool.query(
+        `SELECT email_id FROM Admins`
+      );
+      const adminEmails = adminEmailsResult.rows.map((row: { email_id: string }) => row.email_id);
+      console.log(`${adminEmails}`);
+      const typedMailOptions: MailOptions = {
+        from: 'cnprojectsmartguard@gmail.com',
+        to: `${adminEmails}`,
+        subject: "",
+        text: ""
+      };
+      if (locationDetails.rows.length > 0) {
+        const { building, room_number } = locationDetails.rows[0];
+        typedMailOptions.subject = `Alert: ${sensorTypeName} Sensor at location ${building}/${room_number} triggered`;
+        typedMailOptions.text = `An alert has been triggered for ${sensorTypeName} sensor at location ${building}/${room_number}. The reading value is ${reading_value}${sensorUnit}.\nAlert Type: ${alertType}\nSensor ID: ${sensorId}\nAlert Time: ${alertResult.rows[0].alert_time}\nSensor Type: ${sensorTypeName}\nLow Threshold: ${low_threshold}${sensorUnit}\nHigh Threshold: ${high_threshold}${sensorUnit}`;
+      } else {
+        typedMailOptions.subject = `Alert: Sensor ${sensorId} triggered`;
+        typedMailOptions.text = `An alert has been triggered for sensor ${sensorId}. The reading value is ${reading_value}.`;
+      }
+
+      typedTransporter.sendMail(typedMailOptions, function (error: Error | null, info: { response: string }) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      });
       console.log(`\n Alert created for sensor ${sensorId}: ${alertResult.rows[0].alert_time}`);
     }
     else{
@@ -72,6 +155,7 @@ export const addSensorReading = async (req: Request, res: Response):Promise<any>
     res.status(500).json({ error: 'Failed to create sensor reading', message: error.message });
   }
 };
+
 
 export const getSensorReadingsByLocation = async (req: Request, res: Response): Promise<any> => {
   const { building, room_number, start_time, end_time } = req.params;
@@ -173,7 +257,6 @@ export const getSensorReadingsByLocation = async (req: Request, res: Response): 
 
     res.status(200).json(formattedResult);
   } catch (error: any) {
-    console.error('Error fetching sensor readings:', error);
     res.status(500).json({
       error: 'Failed to fetch sensor readings by location',
       message: error.message
