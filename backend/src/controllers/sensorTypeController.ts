@@ -12,13 +12,13 @@ export const getSensorTypes = async (req: Request, res: Response):Promise<any> =
 };
 
 export const createSensorType = async (req: Request, res: Response):Promise<any> => {
-  const { sensor_type_name, unit, description } = req.body;
+  const { sensor_type_name, unit, low_threshold, high_threshold } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO SensorTypes (sensor_type_name, unit, description)
-       VALUES ($1, $2, $3)
+      `INSERT INTO SensorTypes (sensor_type_name, unit, low_threshold, high_threshold)
+       VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [sensor_type_name, unit, description]
+      [sensor_type_name, unit, low_threshold, high_threshold]
     );
     res.status(201).json(result.rows[0]);
   } catch (error: any) {
@@ -28,16 +28,17 @@ export const createSensorType = async (req: Request, res: Response):Promise<any>
 
 export const updateSensorType = async (req: Request, res: Response):Promise<any> => {
   const { id } = req.params;
-  const { sensor_type_name, unit, description } = req.body;
+  const { sensor_type_name, unit, low_threshold, high_threshold } = req.body;
   try {
     const result = await pool.query(
       `UPDATE SensorTypes
        SET sensor_type_name = COALESCE($2, sensor_type_name),
            unit = COALESCE($3, unit),
-           description = COALESCE($4, description)
+           low_threshold = COALESCE($4, low_threshold),
+           high_threshold = COALESCE($4, high_threshold),
        WHERE sensor_type_id = $1
        RETURNING *`,
-      [id, sensor_type_name, unit, description]
+      [id, sensor_type_name, unit, low_threshold, high_threshold]
     );
     if (result.rowCount === 0) {
       return res.status(404).json({ message: 'Sensor type not found' });

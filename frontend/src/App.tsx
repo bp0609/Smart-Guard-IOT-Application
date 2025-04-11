@@ -1,18 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import Home from './components/Home';
-import axios from 'axios';
+import Dashboard from './components/Dashboard';
+import PageNotFound from './components/PageNotFound';
+import AlertsPage from './components/Alertspage';
+import AlertLogsPage from './components/AlertLogsPage';
+import AddSensorForm from './components/AddSensorForm';
+import { fetchIsAlert, fetchSensorTypes } from './utils/fetch';
 
 function App() {
+  const [isAlert, setIsAlert] = useState(false);
   const [mode, setMode] = useState<'light' | 'dark'>('light');
-  const [message, setMessage] = useState<string>('');
-
   const toggleMode = () => {
     if (mode === 'light') {
       setMode('dark');
-      document.body.style.backgroundColor = '#343a40';
+      document.body.style.backgroundColor = '#132021';
       document.body.style.color = 'white';
     } else {
       setMode('light');
@@ -21,36 +24,30 @@ function App() {
     }
   };
 
+  const [sensor_types, setSensorTypes] = useState<string[]>([]);
   useEffect(() => {
-    const fetchMessage = async () => {
-      try {
-        const response = await axios.get<string>('http://localhost:5000');
-        setMessage(response.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchMessage();
+    fetchSensorTypes(setSensorTypes);
+    fetchIsAlert(setIsAlert);
+    const interval = setInterval(() => {
+      fetchIsAlert(setIsAlert);
+    }, 2000);
+    return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    document.body.className = mode;
-  }, [mode]);
 
   return (
     <>
       <Router>
-        <Navbar title="SG-IOT" mode={mode} toggleMode={toggleMode} />
+        <Navbar title="SG-IOT" mode={mode} toggleMode={toggleMode} setSensorType={setSensorTypes} isAlert={isAlert} />
         <div className="container my-3 text-center">
           <h1>Smart Guard IOT Application</h1>
+          <AddSensorForm id="addSensor" label="addSensorLabel" sensor_types={sensor_types} mode={mode} />
         </div>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Dashboard mode={mode} />} />
+          <Route path="/alerts" element={<AlertsPage mode={mode} />} />
+          <Route path="/alertlogs" element={<AlertLogsPage mode={mode} />} />
+          <Route path="*" element={<PageNotFound />} />
         </Routes>
-        <div>
-          <p>{message}</p>
-        </div>
       </Router>
     </>
   );

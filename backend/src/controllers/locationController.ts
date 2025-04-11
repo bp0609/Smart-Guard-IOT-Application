@@ -28,19 +28,18 @@ export const createLocation = async (req: Request, res: Response):Promise<any> =
 };
 
 export const updateLocation = async (req: Request, res: Response):Promise<any> => {
-  console.log(req);
-  const { id } = req.params;
+  const { locationID} = req.params;
   const { building, room_number, description } = req.body;
+  console.log(building, room_number, description,locationID);
   try {
     const result = await pool.query(
       `UPDATE locations
        SET building = COALESCE($2, building),
            room_number = COALESCE($3, room_number),
-           description = COALESCE($4, description),
-           updated_at = CURRENT_TIMESTAMP
+           description = COALESCE($4, description)
        WHERE location_id = $1
        RETURNING *`,
-      [id, building, room_number, description]
+      [locationID, building, room_number, description]
     );
     if (result.rowCount === 0) {
       return res.status(404).json({ message: 'Location not found' });
@@ -52,11 +51,11 @@ export const updateLocation = async (req: Request, res: Response):Promise<any> =
 };
 
 export const deleteLocation = async (req: Request, res: Response):Promise<any> => {
-  const { id } = req.params;
+  const { locationID } = req.params;
   try {
     const result = await pool.query(
       `DELETE FROM locations WHERE location_id = $1`,
-      [id]
+      [locationID]
     );
     if (result.rowCount === 0) {
       return res.status(404).json({ message: 'Location not found' });
