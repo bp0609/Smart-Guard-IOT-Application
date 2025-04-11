@@ -19,3 +19,9 @@ INSERT INTO SensorTypes (sensor_type_name, unit, low_threshold, high_threshold) 
 -- (1, 1),  -- Temperature sensor
 -- (2, 1), -- Humidity sensor
 -- (3, 2);  -- Light sensor
+
+-- Insert sample users
+INSERT INTO admins (admin_name, email_id) VALUES
+('Bhavik', 'bhavik.patel@iitgn.ac.in'),
+('Hitesh', 'hitesh.kumar@iitgn.ac.in'),
+('Aryan', 'aryan.sahu@iitgn.ac.in');
