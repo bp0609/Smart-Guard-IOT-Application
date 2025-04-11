@@ -14,24 +14,36 @@ Before starting, ensure you have the following installed on your machine:
    Here’s a basic overview of the project structure:
 
    ```bash
-   IoT-project/
+   Smart-Guard-IOT-Application/
    ├── backend/
-   │   ├── controllers/
-   │   │   └── sensorController.js   # (Handles sensor data logic)
-   │   ├── routes/
-   │   │   └── sensors.js            # (Defines API endpoints)
-   │   ├── .env                      # (Environment variables, e.g., DB credentials)
-   │   ├── index.js                  # (Main Express server file)
-   │   ├── package.json
-   │   └── README.md
+   │   └── src/
+   │       ├── controllers/
+   │       │   ├── alertController.ts
+   │       │   ├── sensorController.ts
+   │       │   └── ...
+   │       ├── routes/
+   │       │   ├── alertRoutes.ts
+   │       │   ├── sensorRoutes.ts
+   │       │   └── ...
+   │       ├── database/
+   │       └── index.ts
+   ├── db/
    ├── frontend/
-   │   ├── public/
    │   ├── src/
-   │   │   ├── components/           # (React components)
-   │   │   ├── App.js                # (Main React component)
-   │   │   └── index.js              # (Entry point for React)
-   │   ├── package.json
-   │   └── README.md
+   │   │   ├── components/
+   │   │   │   ├── AlertsPage.tsx
+   │   │   │   ├── Dashboard.tsx
+   │   │   │   ├── Navbar.tsx
+   │   │   │   └── ...
+   │   │   ├── context/
+   │   │   │   └── SelectionContext.tsx
+   │   │   ├── utils/
+   │   │   │   └── fetch.tsx
+   │   │   ├── App.tsx
+   │   │   └──  main.tsx
+   │   └── public/
+   ├── sensor_simulator.py
+   ├── Makefile
    └── README.md
    ```
 
@@ -110,7 +122,7 @@ Before starting, ensure you have the following installed on your machine:
    make start-backend
    ```
 
-3. Or alternatively you can run both using 
+3. Or alternatively you can run both using
 
    ```bash
    make dev

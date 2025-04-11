@@ -20,56 +20,63 @@ export default function Plot({ chartData, mode }: { chartData: any[]; mode: 'lig
     const textColor = mode === 'light' ? '#000' : '#ccc';
     const gridColor = mode === 'light' ? '#ccc' : '#777';
 
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-            mode: 'index' as const,
-            intersect: false
-        },
-        plugins: {
-            tooltip: {
-                backgroundColor: mode === 'light' ? '#fff' : '#333',
-                titleColor: textColor,
-                bodyColor: textColor,
-                borderColor: mode === 'light' ? '#ccc' : '#777',
-                borderWidth: 1
-            },
-            legend: {
-                display: true,
-                labels: {
-                    color: textColor
-                }
-            }
-        },
-        scales: {
-            x: {
-                ticks: {
-                    color: textColor,
-                    maxTicksLimit: 5
-                },
-                grid: {
-                    color: gridColor
-                }
-            },
-            y: {
-                ticks: {
-                    color: textColor
-                },
-                grid: {
-                    color: gridColor
-                }
-            }
-        }
-    };
-
     return (
         <div className="container-fluid">
             <div className="row">
                 {chartData.map((data, index) => {
-                    const latestValue = data.datasets[0].data[data.datasets[0].data.length - 1];
+                    const latestValue = Number(data.datasets[0].latestValue);
                     const isDanger = latestValue < data.thresholds.min || latestValue > data.thresholds.max;
+                    const options = {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index' as const,
+                            intersect: false
+                        },
+                        plugins: {
+                            tooltip: {
+                                backgroundColor: mode === 'light' ? '#fff' : '#333',
+                                titleColor: textColor,
+                                bodyColor: textColor,
+                                borderColor: mode === 'light' ? '#ccc' : '#777',
+                                borderWidth: 1,
+                            },
+                            legend: {
+                                display: true,
+                                labels: {
+                                    color: textColor
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: textColor,
+                                    maxTicksLimit: 5
+                                },
+                                grid: {
+                                    color: gridColor
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Time',
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: textColor,
+                                },
+                                grid: {
+                                    color: gridColor
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Value (' + data.datasets[0].unit + ')',
 
+                                },
+                            }
+                        }
+                    };
                     return (
                         <div className="col-12 col-md-6 mb-3 position-relative" key={index}>
                             <div style={{ position: 'relative', width: '100%', height: '300px' }}>

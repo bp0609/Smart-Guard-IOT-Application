@@ -14,7 +14,7 @@ CREATE TABLE SensorTypes (
     unit VARCHAR(20),                       -- e.g., °C, %, lux, ppm
     low_threshold DECIMAL(10,2),               
     high_threshold DECIMAL(10,2),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(sensor_type_name)
 );
 
@@ -49,4 +49,12 @@ CREATE TABLE Alerts (
     resolved BOOLEAN DEFAULT false,
     FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id),
     FOREIGN KEY (reading_id) REFERENCES SensorReadings(reading_id)
+);
+
+-- 6. Admin Table: Stores admin information.
+CREATE TABLE Admins (
+    admin_id SERIAL PRIMARY KEY,
+    admin_name VARCHAR(100) NOT NULL,
+    email_id VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

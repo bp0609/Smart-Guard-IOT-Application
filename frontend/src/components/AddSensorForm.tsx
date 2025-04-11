@@ -1,6 +1,11 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 
+const IP = import.meta.env.VITE_IP || "localhost";
+const PORT = import.meta.env.VITE_PORT || "5000";
+const BASE_URL = `http://${IP}:${PORT}`;
+
+
 export default function ({ id, label, sensor_types, mode }: { id: string, label: string, sensor_types: string[], mode: 'light' | 'dark' }) {
 
     const checkValidity = (e: any) => {
@@ -13,7 +18,7 @@ export default function ({ id, label, sensor_types, mode }: { id: string, label:
                 e.target.classList.add("is-valid");
             }
         } else if (e.target.id === "roomNumber") {
-            if (e.target.value.length === 0 || e.target.value > 1000) {
+            if (e.target.value.length === 0 || e.target.value > 1000 || e.target.value < 1) {
                 e.target.classList.add("is-invalid");
             } else {
                 e.target.classList.remove("is-invalid");
@@ -26,23 +31,39 @@ export default function ({ id, label, sensor_types, mode }: { id: string, label:
 
     const addSensor = async () => {
         const sensorType = (document.getElementById("sensorType") as HTMLSelectElement).value;
-        const acadBlock = (document.getElementById("acadblock") as HTMLInputElement).value;
-        const roomNumber = (document.getElementById("roomNumber") as HTMLInputElement).value;
+        const acadBlock = (document.getElementById("acadblock") as HTMLInputElement).value.trim();
+        const roomNumber = (document.getElementById("roomNumber") as HTMLInputElement).value.trim();
+
+        if (!sensorType || !acadBlock || !roomNumber) {
+            setResponse({ error: "All fields are required." });
+            return;
+        }
+
+        if (!/^AB\d+$/.test(acadBlock)) {
+            setResponse({ error: "Invalid Academic Block format. Use AB followed by numbers (e.g., AB1)." });
+            return;
+        }
+
+        if (isNaN(Number(roomNumber)) || Number(roomNumber) <= 0 || Number(roomNumber) > 1000) {
+            setResponse({ error: "Room number must be a valid number between 1 and 1000." });
+            return;
+        }
+
         try {
-            const { data } = await axios.post('http://localhost:5000/sensors', {
+            const payload = {
                 sensor_type: sensorType,
                 building: acadBlock,
                 room_number: roomNumber,
                 status: 'active'
-            }, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+            };
+
+            const { data } = await axios.post(`${BASE_URL}/sensors`, payload, {
+                headers: { 'Content-Type': 'application/json' }
             });
-            setResponse(data);
-        } catch (error) {
-            console.error(error);
-            setResponse({ error: 'Failed to add sensor. Please try again.' });
+
+            setResponse(data.error ? { error: data.error } : data);
+        } catch (error: unknown) {
+            setResponse({ error: axios.isAxiosError(error) && error.response?.data?.error ? error.response.data.error : "An unexpected error occurred" });
         }
     }
 

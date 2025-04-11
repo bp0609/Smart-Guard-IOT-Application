@@ -9,5 +9,5 @@ router.get('/:sensorId/readings', getSensorReadings);  // GET /sensors/:sensorId
 
 router.post('/:sensorId/readings', addSensorReading);  // POST /sensors/:sensorId/readings
 
-router.get('/:building/:room_number/readings', getSensorReadingsByLocation);  // GET /sensors/:building/:room_number/readings
+router.get('/:building/:room_number/:start_time/:end_time/readings', getSensorReadingsByLocation);  // GET /sensors/:building/:room_number/readings
 export default router;

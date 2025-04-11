@@ -5,8 +5,9 @@ import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import PageNotFound from './components/PageNotFound';
 import AlertsPage from './components/Alertspage';
+import AlertLogsPage from './components/AlertLogsPage';
 import AddSensorForm from './components/AddSensorForm';
-import { fetchSensorTypes } from './utils/fetch';
+import { fetchIsAlert, fetchSensorTypes } from './utils/fetch';
 
 function App() {
   const [isAlert, setIsAlert] = useState(false);
@@ -26,6 +27,11 @@ function App() {
   const [sensor_types, setSensorTypes] = useState<string[]>([]);
   useEffect(() => {
     fetchSensorTypes(setSensorTypes);
+    fetchIsAlert(setIsAlert);
+    const interval = setInterval(() => {
+      fetchIsAlert(setIsAlert);
+    }, 2000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -38,7 +44,8 @@ function App() {
         </div>
         <Routes>
           <Route path="/" element={<Dashboard mode={mode} />} />
-          <Route path="/alerts" element={<AlertsPage mode={mode} setIsAlert={setIsAlert} />} />
+          <Route path="/alerts" element={<AlertsPage mode={mode} />} />
+          <Route path="/alertlogs" element={<AlertLogsPage mode={mode} />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Router>
