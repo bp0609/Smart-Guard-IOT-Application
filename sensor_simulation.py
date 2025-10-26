@@ -58,6 +58,8 @@ def send_readings(sensor_id, duration, server_url, sensor_type_index):
                 print(f"Sensor {sensor_id}: Failed to send reading, status {response.status_code}")
         except Exception as e:
             print(f"Sensor {sensor_id}: Error sending reading: {e}")
+        
+        time.sleep(0.5)  # Send readings every 0.5 seconds instead of continuously
 
 def create_sensor(server_url,building, room_number, sensor_type):
     installation_date = datetime.now().strftime('%Y-%m-%d')  # Current date in YYYY-MM-DD
@@ -91,7 +93,7 @@ def create_sensor(server_url,building, room_number, sensor_type):
 def create_location(server_url,num_location,num_rooms):
     # Generate random data
     buildings = []
-    rooms=[]
+    rooms = []
     for i in range(1, num_location + 1):
         building_name = f"AB{i}"
         for room in range(101, 101 + num_rooms):
@@ -106,44 +108,66 @@ def create_location(server_url,num_location,num_rooms):
                 if response.status_code == 201:
                     location_id = response.json().get('location_id')  # Adjust key if necessary
                     print(f"Created location with ID {location_id}: {location_name}")
-                    buildings.append(building_name)
-                    rooms.append(room)
+                    # Only append unique values
+                    if building_name not in buildings:
+                        buildings.append(building_name)
+                    if room not in rooms:
+                        rooms.append(room)
                 else:
                     print(response.json())
                     print(f"Failed to create location {location_name}, status {response.status_code}")
             except Exception as e:
                 print(f"Error creating location {location_name}: {e}")
-    return buildings,rooms
+    return buildings, rooms
 
 def main():
     # Configuration
     sensor_types = ["Temperature", "Humidity", "Light", "Air Quality"]
     duration = 60
-    server_url = "http://10.7.14.58:5000"
+    server_url = "http://10.7.4.38:5001"
     
-    # buildings,rooms=create_location(server_url,3,3)
-    buildings = ["AB1", "AB2", "AB3"]
-    rooms = [101, 102, 103]
-
-    sensor_ids = [i for i in range(1, 37)]
-    sensor_type_index = [((i-1) % 4) for i in range(1, 37)]
+    # Step 1: Create locations
+    print("Creating locations...")
+    buildings, rooms = create_location(server_url, 3, 3)
+    
+    if not buildings or not rooms:
+        print("No locations were created successfully. Exiting.")
+        return
+    
+    # Step 2: Create sensors for each location equally
+    print("\nCreating sensors...")
+    sensor_ids = []
+    sensor_type_indices = []
+    
+    # Create sensors: one of each type for each location
+    for building in buildings:
+        for room in rooms:
+            for sensor_type_idx, sensor_type in enumerate(sensor_types):
+                sensor_id = create_sensor(server_url, building, room, sensor_type)
+                if sensor_id:
+                    sensor_ids.append(sensor_id)
+                    sensor_type_indices.append(sensor_type_idx)
+                    time.sleep(0.1)  # Small delay to avoid overwhelming the server
     
     if not sensor_ids:
         print("No sensors were created successfully. Exiting.")
         return
-
-    # Step 2: Start threads to send readings for each sensor
+    
+    print(f"\nSuccessfully created {len(sensor_ids)} sensors")
+    
+    # Step 3: Start threads to send readings for each sensor
+    print("\nStarting to send sensor readings...")
     threads = []
-    for i,sensor_id in enumerate(sensor_ids):
-        thread = threading.Thread(target=send_readings, args=(sensor_id, duration, server_url,sensor_type_index[i]))           # i denotes the sensor type 0,1,2,3
+    for i, sensor_id in enumerate(sensor_ids):
+        thread = threading.Thread(target=send_readings, args=(sensor_id, duration, server_url, sensor_type_indices[i]))
         threads.append(thread)
         thread.start()
 
-    # Step 3: Wait for all threads to complete
+    # Step 4: Wait for all threads to complete
     for thread in threads:
         thread.join()
 
-    print("All sensors have finished sending data.")
+    print("\nAll sensors have finished sending data.")
 
 if __name__ == "__main__":
     main()

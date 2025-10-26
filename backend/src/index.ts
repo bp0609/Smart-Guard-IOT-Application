@@ -1,4 +1,4 @@
-import express,{Application} from 'express';
+import express, { Application } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -27,7 +27,7 @@ app.use('/sensors', sensorReadingsRoute);
 app.use('/alerts', alertsRoute);
 app.use('/sensor_types', sensorTypesRoute);
 
-const ip = process.env.IP || 'localhost';
+const ip = process.env.IP || '0.0.0.0';
 app.listen(port, ip as string, () => {
   console.log(`Server is running on http://${ip}:${port}`);
 });
