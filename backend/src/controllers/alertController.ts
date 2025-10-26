@@ -2,7 +2,7 @@
 import { Request, Response } from 'express';
 import pool from '../db';
 
-export const getAlertLogs = async (req: Request, res: Response):Promise<any> => {
+export const getAlertLogs = async (req: Request, res: Response): Promise<any> => {
   try {
     const result = await pool.query(
       `SELECT DISTINCT ON (sensor_id) sensor_id, reading_id,alert_time
@@ -26,12 +26,17 @@ export const getAlertLogs = async (req: Request, res: Response):Promise<any> => 
 
     res.status(200).json(detailedResult.rows);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to fetch alerts', message: error.message });
+    console.error('Error fetching alert logs:', error);
+    res.status(500).json({
+      error: 'Failed to fetch alert logs',
+      message: `Database error while fetching alert history: ${error.message}`,
+      details: error.code || 'UNKNOWN_ERROR'
+    });
   }
 };
 
 // sends {sensor_id,building, room_no, sensor_type_name, alert_time, alert_value}
-export const getAlerts = async (req: Request, res: Response):Promise<any> => {
+export const getAlerts = async (req: Request, res: Response): Promise<any> => {
   try {
     const result = await pool.query(
       `SELECT DISTINCT ON (sensor_id) sensor_id, reading_id,alert_time
@@ -58,11 +63,16 @@ export const getAlerts = async (req: Request, res: Response):Promise<any> => {
 
     res.status(200).json(detailedResult.rows);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to fetch alerts', message: error.message });
+    console.error('Error fetching active alerts:', error);
+    res.status(500).json({
+      error: 'Failed to fetch active alerts',
+      message: `Database error while fetching unresolved alerts: ${error.message}`,
+      details: error.code || 'UNKNOWN_ERROR'
+    });
   }
 }
 
-export const createAlert = async (req: Request, res: Response):Promise<any> => {
+export const createAlert = async (req: Request, res: Response): Promise<any> => {
   const { sensor_id, reading_id, alert_type, alert_message } = req.body;
   try {
     const result = await pool.query(
@@ -73,6 +83,27 @@ export const createAlert = async (req: Request, res: Response):Promise<any> => {
     );
     res.status(201).json(result.rows[0]);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to create alert', message: error.message });
+    console.error('Error creating alert:', error);
+    if (error.code === '23503') {
+      res.status(404).json({
+        error: 'Invalid reference',
+        message: `Cannot create alert: sensor ${sensor_id} or reading ${reading_id} does not exist`,
+        sensor_id,
+        reading_id,
+        details: 'FOREIGN_KEY_VIOLATION'
+      });
+    } else if (error.code === '23502') {
+      res.status(400).json({
+        error: 'Missing required fields',
+        message: `sensor_id, reading_id, and alert_type are required to create an alert`,
+        details: 'NOT_NULL_VIOLATION'
+      });
+    } else {
+      res.status(500).json({
+        error: 'Failed to create alert',
+        message: `Database error while creating alert: ${error.message}`,
+        details: error.code || 'UNKNOWN_ERROR'
+      });
+    }
   }
 };

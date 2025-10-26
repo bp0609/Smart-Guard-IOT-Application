@@ -14,7 +14,13 @@ export const getSensorReadings = async (req: Request, res: Response): Promise<an
     );
     res.status(200).json(result.rows);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to fetch sensor readings', message: error.message });
+    console.error(`Error fetching readings for sensor ${sensorId}:`, error);
+    res.status(500).json({
+      error: 'Failed to fetch sensor readings',
+      message: `Database error while fetching readings for sensor ${sensorId}: ${error.message}`,
+      sensor_id: sensorId,
+      details: error.code || 'UNKNOWN_ERROR'
+    });
   }
 };
 
@@ -46,7 +52,7 @@ interface Transporter {
 
 const typedTransporter: Transporter = transporter;
 
-export const addSensorReading = async (req: Request, res: Response):Promise<any> => {
+export const addSensorReading = async (req: Request, res: Response): Promise<any> => {
   const { sensorId } = req.params;
   let { reading_value } = req.body;
   try {
@@ -59,11 +65,15 @@ export const addSensorReading = async (req: Request, res: Response):Promise<any>
     );
 
     if (sensorTypeResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Sensor type not found' });
+      return res.status(404).json({
+        error: 'Sensor not found',
+        message: `Sensor with ID ${sensorId} does not exist or is not properly configured`,
+        sensor_id: sensorId
+      });
     }
 
     let { low_threshold, high_threshold } = sensorTypeResult.rows[0];
-    
+
     const result = await pool.query(
       `INSERT INTO SensorReadings (sensor_id, reading_value)
        VALUES ($1, $2)
@@ -73,7 +83,7 @@ export const addSensorReading = async (req: Request, res: Response):Promise<any>
     low_threshold = low_threshold === null ? null : parseFloat(low_threshold);
     high_threshold = high_threshold === null ? null : parseFloat(high_threshold);
     reading_value = parseFloat(reading_value);
-    let alertType="Unknown";
+    let alertType = "Unknown";
     if ((low_threshold && reading_value < low_threshold) || (high_threshold && reading_value > high_threshold)) {
       alertType = (low_threshold && reading_value < low_threshold) ? 'low' : 'high';
       const alertResult = await pool.query(
@@ -83,7 +93,12 @@ export const addSensorReading = async (req: Request, res: Response):Promise<any>
         [sensorId, result.rows[0].reading_id, alertType]
       );
       if (alertResult.rowCount === 0) {
-        return res.status(500).json({ error: 'Failed to create alert' });
+        console.error(`Failed to create alert for sensor ${sensorId}`);
+        return res.status(500).json({
+          error: 'Failed to create alert',
+          message: `Alert could not be created for sensor ${sensorId} despite threshold violation`,
+          sensor_id: sensorId
+        });
       }
       // Notify the user about the alert
       // You can use a notification service or send an email here
@@ -140,7 +155,7 @@ export const addSensorReading = async (req: Request, res: Response):Promise<any>
       });
       console.log(`\n Alert created for sensor ${sensorId}: ${alertResult.rows[0].alert_time}`);
     }
-    else{
+    else {
       // make resolved column true for this sensor id
       console.log("\n Alert Resolved");
       const alertResult = await pool.query(
@@ -152,7 +167,22 @@ export const addSensorReading = async (req: Request, res: Response):Promise<any>
     }
     res.status(201).json(result.rows[0]);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to create sensor reading', message: error.message });
+    console.error(`Error creating reading for sensor ${sensorId}:`, error);
+    if (error.code === '23503') {
+      res.status(404).json({
+        error: 'Sensor not found',
+        message: `Cannot add reading: sensor with ID ${sensorId} does not exist`,
+        sensor_id: sensorId,
+        details: 'FOREIGN_KEY_VIOLATION'
+      });
+    } else {
+      res.status(500).json({
+        error: 'Failed to create sensor reading',
+        message: `Database error while adding reading for sensor ${sensorId}: ${error.message}`,
+        sensor_id: sensorId,
+        details: error.code || 'UNKNOWN_ERROR'
+      });
+    }
   }
 };
 
@@ -171,7 +201,12 @@ export const getSensorReadingsByLocation = async (req: Request, res: Response): 
     );
 
     if (locationResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Location not found' });
+      return res.status(404).json({
+        error: 'Location not found',
+        message: `No location found with building '${building}' and room number ${room_number}`,
+        building,
+        room_number
+      });
     }
 
     const locationId = locationResult.rows[0].location_id;
@@ -257,9 +292,13 @@ export const getSensorReadingsByLocation = async (req: Request, res: Response): 
 
     res.status(200).json(formattedResult);
   } catch (error: any) {
+    console.error(`Error fetching readings for location ${building}-${room_number}:`, error);
     res.status(500).json({
       error: 'Failed to fetch sensor readings by location',
-      message: error.message
+      message: `Database error while fetching readings for ${building}-${room_number}: ${error.message}`,
+      building,
+      room_number,
+      details: error.code || 'UNKNOWN_ERROR'
     });
   }
 };

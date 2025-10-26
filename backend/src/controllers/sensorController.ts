@@ -7,7 +7,12 @@ export const getSensors = async (req: Request, res: Response): Promise<any> => {
     const result = await pool.query('SELECT * FROM Sensors');
     res.status(200).json(result.rows);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to fetch sensors', message: error.message });
+    console.error('Error fetching sensors:', error);
+    res.status(500).json({
+      error: 'Failed to fetch sensors from database',
+      message: `Database error: ${error.message}`,
+      details: error.code || 'UNKNOWN_ERROR'
+    });
   }
 };
 
@@ -16,32 +21,61 @@ export const getSensorById = async (req: Request, res: Response): Promise<any> =
   try {
     const result = await pool.query('SELECT * FROM Sensors WHERE sensor_id = $1', [id]);
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Sensor not found', message: 'Sensor not found' });
+      return res.status(404).json({
+        error: 'Sensor not found',
+        message: `No sensor exists with ID: ${id}`,
+        sensor_id: id
+      });
     }
     res.status(200).json(result.rows[0]);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to fetch sensor', message: error.message });
+    console.error(`Error fetching sensor ${id}:`, error);
+    res.status(500).json({
+      error: 'Failed to fetch sensor details',
+      message: `Database error while fetching sensor ${id}: ${error.message}`,
+      sensor_id: id
+    });
   }
 };
 
 export const createSensor = async (req: Request, res: Response): Promise<any> => {
   const { sensor_type, building, room_number, installation_date, status } = req.body;
   try {
+    // Validate location exists
     const location_id_result = await pool.query('SELECT location_id FROM Locations WHERE building = $1 AND room_number = $2', [building, room_number]);
     if (location_id_result.rowCount === 0) {
-      return res.status(400).json({ error: 'Location not found', message: 'Invalid location_id' });
+      return res.status(400).json({
+        error: 'Location not found',
+        message: `Location ${building}-${room_number} does not exist. Please create the location first.`,
+        building,
+        room_number
+      });
     }
     const location_id = location_id_result.rows[0].location_id;
+
+    // Validate sensor type exists
     const sensorTypeResult = await pool.query('SELECT * FROM sensortypes WHERE sensor_type_name = $1', [sensor_type]);
     if (sensorTypeResult.rowCount === 0) {
-      return res.status(400).json({ error: 'Sensor type not found', message: 'Invalid sensor_type' });
+      return res.status(400).json({
+        error: 'Sensor type not found',
+        message: `Sensor type '${sensor_type}' is not valid. Available types can be fetched from /sensor_types endpoint.`,
+        provided_sensor_type: sensor_type
+      });
     }
     const sensor_type_id = sensorTypeResult.rows[0].sensor_type_id;
-    // check if sensor already exists
-    const existingSensor = await pool.query('SELECT * FROM Sensors WHERE sensor_type_id = $1 AND location_id = $2', [sensor_type_id, location_id]);
+
+    // Check if sensor already exists at this location
+    const existingSensor = await pool.query('SELECT sensor_id FROM Sensors WHERE sensor_type_id = $1 AND location_id = $2', [sensor_type_id, location_id]);
     if (existingSensor.rowCount && existingSensor.rowCount > 0) {
-      return res.status(400).json({ error: 'Sensor already exists', message: 'Sensor already exists' });
+      return res.status(400).json({
+        error: 'Sensor already exists',
+        message: `A ${sensor_type} sensor already exists at location ${building}-${room_number}. Sensor ID: ${existingSensor.rows[0].sensor_id}`,
+        existing_sensor_id: existingSensor.rows[0].sensor_id,
+        location: `${building}-${room_number}`,
+        sensor_type
+      });
     }
+
     const result = await pool.query(
       `INSERT INTO Sensors (sensor_type_id, location_id, installation_date, status)
        VALUES ($1, $2, $3, $4)
@@ -50,7 +84,12 @@ export const createSensor = async (req: Request, res: Response): Promise<any> =>
     );
     res.status(201).json(result.rows[0]);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to add sensor', message: error.message });
+    console.error('Error creating sensor:', error);
+    res.status(500).json({
+      error: 'Failed to add sensor',
+      message: `Database error while creating sensor: ${error.message}`,
+      details: error.code || 'UNKNOWN_ERROR'
+    });
   }
 };
 
@@ -69,11 +108,21 @@ export const updateSensor = async (req: Request, res: Response): Promise<any> =>
       [id, sensor_type_id, location_id, installation_date, status]
     );
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Sensor not found', message: 'Sensor not found' });
+      return res.status(404).json({
+        error: 'Sensor not found',
+        message: `Cannot update: sensor with ID ${id} does not exist`,
+        sensor_id: id
+      });
     }
     res.status(200).json(result.rows[0]);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to update sensor', message: error.message });
+    console.error(`Error updating sensor ${id}:`, error);
+    res.status(500).json({
+      error: 'Failed to update sensor',
+      message: `Database error while updating sensor ${id}: ${error.message}`,
+      sensor_id: id,
+      details: error.code || 'UNKNOWN_ERROR'
+    });
   }
 };
 
@@ -82,10 +131,30 @@ export const deleteSensor = async (req: Request, res: Response): Promise<any> =>
   try {
     const result = await pool.query('DELETE FROM Sensors WHERE sensor_id = $1', [id]);
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Sensor not found', message: 'Sensor not found' });
+      return res.status(404).json({
+        error: 'Sensor not found',
+        message: `Cannot delete: sensor with ID ${id} does not exist`,
+        sensor_id: id
+      });
     }
     res.status(204).send();
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to delete sensor', message: error.message });
+    console.error(`Error deleting sensor ${id}:`, error);
+    // Check for foreign key constraint violations
+    if (error.code === '23503') {
+      res.status(409).json({
+        error: 'Cannot delete sensor',
+        message: `Sensor ${id} has associated readings or alerts. Delete those first or contact administrator.`,
+        sensor_id: id,
+        details: 'FOREIGN_KEY_VIOLATION'
+      });
+    } else {
+      res.status(500).json({
+        error: 'Failed to delete sensor',
+        message: `Database error while deleting sensor ${id}: ${error.message}`,
+        sensor_id: id,
+        details: error.code || 'UNKNOWN_ERROR'
+      });
+    }
   }
 };
