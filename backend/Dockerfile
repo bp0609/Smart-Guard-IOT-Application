@@ -25,6 +25,8 @@
     # Copy built code
     COPY --from=builder /app/dist ./dist
     
+    COPY .env .env
+    
     # Expose port (match your backend port)
     EXPOSE 5000
     
